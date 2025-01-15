@@ -8,7 +8,7 @@ public class PhysicsRelated : MonoBehaviour
     private Collider2D thisCol;
 
     [Header("PhysicsCheck")]
-    public bool isGround;
+    private bool isGround;
     public bool wasGround;
     public Transform theGroundCheckpoint;
     public bool isWall;
@@ -16,13 +16,13 @@ public class PhysicsRelated : MonoBehaviour
     public Transform theWallCheckpoint;
     public bool isForward;
     public Transform theForwardCheckpoint;
-    public bool isVerticalForward;
-    public Transform theVerticalForwardCheckpoint;
+    public bool isBackWall;
+    public Transform theBackWallCheckpoint;
     public LayerMask theGround;
     public float theGroundCheckRadius;
     public float theWallCheckRadius;
     public float theForwardCheckRadius;
-    public float theVerticalForwardCheckRadius;
+    public float theBackWallCheckRadius;
 
     [Header("PhysicsChange-")]
     public PhysicsMaterial2D normalMat;
@@ -71,7 +71,7 @@ public class PhysicsRelated : MonoBehaviour
         GroundCheck();
         WallCheck();
         ForwardCheck();
-        VerticalForwardCheck();
+        BackWallCheck();
         MaterialAndGravityUpdate();
     }
 
@@ -95,9 +95,9 @@ public class PhysicsRelated : MonoBehaviour
         isForward = Physics2D.OverlapCircle(theForwardCheckpoint.position, theForwardCheckRadius, theGround);
     }
 
-    private void VerticalForwardCheck()
+    private void BackWallCheck()
     {
-        isVerticalForward = Physics2D.OverlapCircle(theVerticalForwardCheckpoint.position, theVerticalForwardCheckRadius, theGround);
+        isBackWall = Physics2D.OverlapCircle(theBackWallCheckpoint.position, theBackWallCheckRadius, theGround);
     }
 
     private void MaterialAndGravityUpdate()
@@ -193,6 +193,13 @@ public class PhysicsRelated : MonoBehaviour
 
 
     #region 外部调用
+
+    public bool IsOnGround()
+    {
+        return isGround;
+    }
+
+
     public void LeaveGround()
     {
         hasGround = false;
@@ -225,6 +232,6 @@ public class PhysicsRelated : MonoBehaviour
         Gizmos.DrawWireSphere(theGroundCheckpoint.position, theGroundCheckRadius);
         Gizmos.DrawWireSphere(theWallCheckpoint.position, theWallCheckRadius);
         Gizmos.DrawWireSphere(theForwardCheckpoint.position, theForwardCheckRadius);
-
+        Gizmos.DrawWireSphere(theBackWallCheckpoint.position, theBackWallCheckRadius);
     }
 }

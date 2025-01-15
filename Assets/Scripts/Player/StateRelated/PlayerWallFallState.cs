@@ -11,7 +11,7 @@ public class PlayerWallFallState : PlayerState
     public override void Enter()
     {
         base.Enter();
-        player.fallSpeedMax = player.wallFallSpeedMax;
+        player.verticalFallSpeedMax = player.wallFallSpeedMax;
         CurrentStateCandoChange();
     }
 

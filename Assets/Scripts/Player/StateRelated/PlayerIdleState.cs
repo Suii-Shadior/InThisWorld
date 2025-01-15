@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using UnityEngine;
 
 public class PlayerIdleState : PlayerState
 {
@@ -30,21 +31,35 @@ public class PlayerIdleState : PlayerState
     protected override void CurrentStateCandoChange()
     {
         base.CurrentStateCandoChange();
-        player.canBabble = false;
-        player.canCooldown = false;
+        player.canHorizontalMove = true;
+        player.canVerticalMove = false;
+        player.canJumpCounter = player.canJumpLength;
+        player.canWallJump = false;
+        player.WhetherCanHold();
+        player.canWallFall = false;
+        player.canAttack = true;
+        player.canCooldown = true;
     }
 
     protected override void CurrentStateCandoUpdate()
     {
         base.CurrentStateCandoUpdate();
+        player.WhetherCanHold();
+        player.WhetherCanJump();
+        player.WhetherCanWallFall();
+        player.WhetherCanDash();
     }
 
     private void Idle()
     {
-        if (player.canAct)
+        if (!player.thisPR.IsOnGround())
         {
-
-            player.StateOver();
+            player.ChangeToAirState();
+        }
+        else 
+        if (player.horizontalInputVec!=0)
+        {
+            player.ChangeToHorizontalMoving();
         }
     }
 }

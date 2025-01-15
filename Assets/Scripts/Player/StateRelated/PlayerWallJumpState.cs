@@ -25,14 +25,55 @@ public class PlayerWallJumpState : PlayerState
     {
         base.Update();
         CurrentStateCandoUpdate();
-        player.Move();
+        Move();
         if (player.thisRB.velocity.y < -player.peakSpeed)
         {
             stateMachine.ChangeState(player.airState);
             return;
         }
     }
-
+    private void Move()
+    {
+        if (player.isGameplay)
+        {
+            if (!player.isUncontrol)
+            {
+                if (Mathf.Abs(player.thisRB.velocity.x + player.horizontalInputVec * player.horizontalMoveSpeed * Time.deltaTime) < player.horizontalMoveSpeedMax)//在考虑到的情况中，该方案和上一句效果相同
+                {
+                    if (Mathf.Abs(player.thisRB.velocity.x) < player.horizontalmoveThresholdSpeed)
+                    {
+                        player.thisRB.velocity += new Vector2(player.horizontalInputVec * (player.horizontalmoveThresholdSpeed + player.horizontalMoveSpeed * Time.deltaTime), 0f);
+                    }
+                    else
+                    {
+                        player.thisRB.velocity += new Vector2(player.horizontalInputVec * player.horizontalMoveSpeed * Time.deltaTime, 0f);
+                    }
+                }
+                else
+                {
+                    int Temp = (player.horizontalInputVec != 0) ? ((player.horizontalInputVec == player.faceDir) ? 1 : -1) : 0;
+                    if (Temp < 0)
+                    {
+                        player.thisRB.velocity += new Vector2(player.horizontalMoveSpeed * Temp * Time.deltaTime, 0f);
+                        //Debug.Log("超速状态下减速");
+                    }
+                    else
+                    {
+                        //Debug.Log("不会再加速");
+                    }
+                }
+            }
+            else
+            {
+                if (Mathf.Abs(player.thisRB.velocity.x + player.horizontalInputVec * player.horizontalMoveSpeed * Time.deltaTime) < player.horizontalMoveSpeedMax)//在考虑到的情况中，该方案和上一句效果相同
+                {
+                    if (Mathf.Abs(player.thisRB.velocity.x) < player.horizontalmoveThresholdSpeed) player.thisRB.velocity += new Vector2(player.horizontalInputVec * (player.horizontalmoveThresholdSpeed + player.horizontalMoveSpeed * Time.deltaTime), 0f);
+                    else
+                        player.thisRB.velocity += new Vector2(player.horizontalInputVec * player.horizontalMoveSpeed * Time.deltaTime, 0f);
+                }
+            }
+        }
+    }
     protected override void CurrentStateCandoChange()
     {
         base.CurrentStateCandoChange();

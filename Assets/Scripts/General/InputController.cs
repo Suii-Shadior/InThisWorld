@@ -43,8 +43,10 @@ public class InputController : MonoBehaviour
             //以下均是注册内容
             theInput.Gameplay.Jump.started += ctx =>
             {
+
                 if (thePlayer.stateMachine.currentState == thePlayer.holdState || thePlayer.stateMachine.currentState == thePlayer.wallFallState || thePlayer.stateMachine.currentState == thePlayer.wallClimbState && (thePlayer.canAct && thePlayer.canWallJump))
                 {
+                    Debug.Log("蹬墙跳");
                     thePlayer.stateMachine.ChangeState(thePlayer.walljumpState);
                     return;
                 }
@@ -53,7 +55,8 @@ public class InputController : MonoBehaviour
                     if (thePlayer.canAct && thePlayer.canJump)
                     {
                         if (thePlayer.stateMachine.currentState != thePlayer.dashState && thePlayer.stateMachine.currentState != thePlayer.holdState && thePlayer.stateMachine.currentState != thePlayer.wallFallState && thePlayer.stateMachine.currentState != thePlayer.wallClimbState)
-                        {
+                        {               
+                            Debug.Log("普通跳");
                             thePlayer.stateMachine.ChangeState(thePlayer.jumpState);
                             return;
                         }
@@ -100,14 +103,7 @@ public class InputController : MonoBehaviour
     }
     private void Update()
     {
-        if (theLevel.currentSceneName != "LevelSelect" && thePlayer != null)
-        {
-
-}
-        else
-        {
-            //theLSInputVec2 = theInput.LevelSelect.Move.ReadValue<Vector2>();
-        }
+        Debug.Log(horizontalInputVec);
     }
 
 

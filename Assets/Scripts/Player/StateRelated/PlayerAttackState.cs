@@ -38,7 +38,7 @@ public class PlayerAttackState : PlayerState
         else
         {
             stateEnd = false;
-            if (player.thisPR.isGround)
+            if (player.thisPR.IsOnGround())
             {
                 stateMachine.ChangeState(player.idleState);
                 return;

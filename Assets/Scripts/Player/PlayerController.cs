@@ -6,11 +6,10 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     #region 组件
-    [HideInInspector] public Animator anim;
     [HideInInspector] public Rigidbody2D thisRB;
     [HideInInspector] public PhysicsRelated thisPR;
-    [HideInInspector] public PlayerFXController thisFX;
     [HideInInspector] public PlayerAnimatorController thisAC;
+    [HideInInspector] public PlayerFXController thisFX;
     [HideInInspector] public CharacterRelated thisCR;
     [SerializeField] private ControllerManager theCM;
     private LevelController theLevel;
@@ -19,56 +18,53 @@ public class PlayerController : MonoBehaviour
     public Transform thisDP;
 
     #endregion
+    #region 状态机相关
     public PlayerStateMachine stateMachine { get; private set; }
     public PlayerIdleState idleState { get; private set; }
-    public PlayerBabbleState babbleState { get; private set; }
     public PlayerMoveState moveState { get; private set; }
     public PlayerJumpState jumpState { get; private set; }
-    public PlayerDashState dashState { get; private set; }
-    public PlayerWallClimbState wallClimbState { get; private set; }
-    public PlayerWallFallState wallFallState { get; private set; }
-    public PlayerHoldState holdState { get; private set; }
-    public PlayerWallJumpState walljumpState { get; private set; }
-
-    public PlayerAttackState attackState { get; private set; }
     public PlayerAirState airState { get; private set; }
-    //public PlayerPrePullState prepullState { get; private set; }
-    //public PlayerPullingState pullingState { get; private set; }
+    public PlayerDashState dashState { get; private set; }
+    public PlayerWallFallState wallFallState { get; private set; }
+    public PlayerWallJumpState walljumpState { get; private set; }
+    public PlayerHoldState holdState { get; private set; }
+    public PlayerWallClimbState wallClimbState { get; private set; }
+    public PlayerAttackState attackState { get; private set; }
     public PlayerUncontrolState uncontrolState { get; private set; }
-    //public PlayerElectricRushState electricRushState { get; private set; }
-    //public PlayerElectricState electricState { get; private set; }
-    //public PlayerPlantState plantState { get; private set; }
     public PlayerDeadState deadState { get; private set; }
-
-    [Header("GameRelation")]
+    public PlayerBabbleState babbleState { get; private set; }
+    #endregion
+    #region 变量
+    [Header("通用")]
     public bool isGameplay;
-    public bool canAct;
+    public bool canAct;//无法进行操作，用于复活重置、剧情动画等完全无法进行任何操作的场景
     public float canActCounter;
     public float hurtUnactDuration;
     public float deadUnactDuration;
-
-    [Header("nowStat")]
-    public string nowState;
-    public float moveSpeed;
-    public float moveSpeedMax;
-    public float moveThresholdSpeed;
-    public float fallSpeedMax;
-    [Header("General")]
-    private Vector3 rightDir = new Vector3(1, 1, 1), leftDir = new Vector3(-1, 1, 1);
     public bool faceRight = true;//faceRight是可以通过输入或者外部情况进行转换的对象，是条件
     public int faceDir = 1;//faceDir是通过多个条件进行判断的面向，是结果
-    public bool canTurnAround = true;
     public bool needTurnAround;//对于敌人以及演出时的玩家，需要通过该标识进行转身
     public int horizontalInputVec; 
     public int verticalInputVec;
+
+    [Header("当前状态于数值")]
+    public string nowState;
+    public float horizontalMoveSpeed;
+    public float horizontalMoveSpeedMax;
+    public float horizontalmoveThresholdSpeed;
+    public float verticalFallSpeedMax;
+    public float verticalMoveSpeed;
+    public float verticalMoveSpeedMax;
+    public float verticalThresholdSpeed;
     
-    [Header("Ability")]
+    [Header("行动能力")]
     public bool jumpAbility;
     public bool babbleAbility;
     public bool dashAbility;
     public bool holdAbility;
 
-    [Header("Can")]
+    [Header("行动状态")]
+    public bool canTurnAround;
     public bool canHorizontalMove;
     public bool canVerticalMove;
     public bool canJump;
@@ -80,20 +76,13 @@ public class PlayerController : MonoBehaviour
     public bool canWallClimbForward;//要记录下蔚蓝怎么处理的
     public bool canAttack;
     public bool canBabble;
-    public bool canCooldown;
-
-    [Header("计时器")]
-    
+    public bool canCooldown;    
 
     [Header("水平移动")]
     public float normalmoveSpeed;
     public float normalmoveSpeedMax;
     public float normalmoveThresholdSpeed;
 
-    [Header("垂直移动")]
-    public float climbSpeed;
-    public float climbSpeedMax;
-    public float climbThresholdSpeed;
 
     [Header("空中")]
     public float airmoveSpeed;
@@ -102,7 +91,6 @@ public class PlayerController : MonoBehaviour
 
     [Header("跳跃")]
     public float jumpForce;
-    public float jumpingMoveSpeed;
     public float peakSpeed;
     public float canJumpCounter;
     public float canJumpLength;
@@ -148,22 +136,23 @@ public class PlayerController : MonoBehaviour
     public float attackCheckRadius;
 
 
-    [Header("KnockedBackDetail")]
+    [Header("限制控制")]//极难进行操作，被强制移动或击飞受伤时使用
     public float konckedBackCounter;
     public float knockedBackLength;
     public float knockedBackForce;
-    public bool isUncontrol;//定义其实为被强制移动或者表演系统时的状态，不使用
+    public bool isUncontrol;
     public float uncontrolCounter;
     public float uncontrolDuration;
 
 
-    [Header("Hurt")]
+    [Header("受伤")]
     public float invinsibleCounter;
     public float invinsibleLength;
 
-    [Header("Dead&Sit")]
+    [Header("死亡与复活")]
     public float sitCounter;
-    public float sitLength;
+    //public float sitLength;
+    
     //[Header("伸缩手")]
     //public GameObject ropePrefab;
     //public GameObject indicationPrefab;
@@ -202,7 +191,7 @@ public class PlayerController : MonoBehaviour
     //[Header("熄灯器")]
     //[Header("Mashroom More")]
 
-
+    #endregion
 
 
 
@@ -213,7 +202,6 @@ public class PlayerController : MonoBehaviour
     {
         thisRB = GetComponent<Rigidbody2D>();
         thisPR = GetComponent<PhysicsRelated>();
-        anim = GetComponentInChildren<Animator>();
         thisAC = GetComponentInChildren<PlayerAnimatorController>();
         thisFX = GetComponentInChildren<PlayerFXController>();
         thisCR = GetComponentInChildren<CharacterRelated>();
@@ -226,8 +214,8 @@ public class PlayerController : MonoBehaviour
     {
         stateMachine = new PlayerStateMachine();
         idleState = new PlayerIdleState(this, stateMachine, "isIdling");
-        moveState = new PlayerMoveState(this, stateMachine, "isMoving");
-        jumpState = new PlayerJumpState(this, stateMachine, "isJumping");
+        moveState = new PlayerMoveState(this, stateMachine, "isHorizontalMoving");
+        jumpState = new PlayerJumpState(this, stateMachine, "isAiring");
         wallFallState = new PlayerWallFallState(this, stateMachine, "isWallFalling");
         walljumpState = new PlayerWallJumpState(this, stateMachine, "isJumping");//等相应素材
         holdState = new PlayerHoldState(this, stateMachine, "isHolding");
@@ -272,6 +260,7 @@ public class PlayerController : MonoBehaviour
         if (canTurnAround)
         {
             faceRight = !faceRight;
+            canTurnAround = true;
         }
     }
 
@@ -308,7 +297,7 @@ public class PlayerController : MonoBehaviour
             airmoveSpeed = 0;
 
         }
-        fallSpeedMax = airFallSpeedMax;
+        verticalFallSpeedMax = airFallSpeedMax;
         stateMachine.Initialize(airState);//可能需要做个方法来判断当前应该处于什么状态
         //mushroomPoint = thisPR.theGroundCheckpoint;
         SkillFresh();
@@ -361,10 +350,25 @@ public class PlayerController : MonoBehaviour
     #region 外部改变状态方法
     public void StateOver()
     {
-        if (thisPR.isGround) stateMachine.ChangeState(moveState);
+        if (thisPR.IsOnGround()) stateMachine.ChangeState(moveState);
         else stateMachine.ChangeState(airState);
     }
 
+    public void ChangeToHorizontalMoving()
+    {
+        Debug.Log("这里?");
+        stateMachine.ChangeState(moveState);
+    }
+
+    public void ChangeToAirState()
+    {
+        stateMachine.ChangeState(airState);
+    }
+    public void ChangeToJumpState()
+    {
+        stateMachine.ChangeState(jumpState);
+
+    }
     public void ChangeToBabbleState()
     {
         if (babbleAbility && canBabble)
@@ -410,23 +414,22 @@ public class PlayerController : MonoBehaviour
     #region Can判断
     public void WhetherCanJump()
     {
-        if (canJumpCounter > 0f)
+        if (canJumpCounter >= 0f)
         {
             canJumpCounter -= Time.deltaTime;
-            if (stateMachine.currentState == attackState) //Todo:等多个攻击了这里需要更新
+            if (stateMachine.currentState == attackState) 
 
             {
-                //Debug.Log("???");
                 canJump = false;
             }
             else
             {
+                Debug.Log("???");
                 canJump = true;
             }
         }
         else
         {
-            //Debug.Log("还是这里？");
             canJump = false;
         }
 
@@ -440,7 +443,7 @@ public class PlayerController : MonoBehaviour
     }
     public void WhetherCanWallFall()
     {
-        if (!thisPR.isGround && thisPR.isWall && thisRB.velocity.y <= 0.1 && stateMachine.currentState != dashState) canWallFall = true;
+        if (!thisPR.IsOnGround() && thisPR.isWall && thisRB.velocity.y <= 0.1 && stateMachine.currentState != dashState) canWallFall = true;
         else canWallFall = false;
     }
 
@@ -459,7 +462,7 @@ public class PlayerController : MonoBehaviour
     }
     public void WhetherCanWallVeritalForward()
     {
-        if (thisPR.isVerticalForward)
+        if (thisPR.isBackWall)
         {
             canWallClimbForward = true;
         }
@@ -504,23 +507,8 @@ public class PlayerController : MonoBehaviour
             transform.localScale = new Vector3(faceDir, 1, 1);
         }
     }
-    public void Move()
-    {
-        if (Mathf.Abs(thisRB.velocity.x + horizontalInputVec * moveSpeed * Time.deltaTime) < moveSpeedMax)//在考虑到的情况中，该方案和上一句效果相同
-        {
-            if (Mathf.Abs(thisRB.velocity.x) < normalmoveThresholdSpeed) thisRB.velocity += new Vector2(horizontalInputVec * (normalmoveThresholdSpeed + moveSpeed * Time.deltaTime), 0f);
-            else
-                thisRB.velocity += new Vector2(horizontalInputVec * moveSpeed * Time.deltaTime, 0f);
-        }
-    }
-    public void Jump()
-    {
-        canJumpCounter = 0f;
-        ClearYVelocity();
-        thisRB.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
-        thisPR.LeaveGround();
-        //Debug.Log(thisRB.velocity.y);
-    }
+
+
 
     public void JumpBufferCheck()
     {
@@ -546,9 +534,9 @@ public class PlayerController : MonoBehaviour
     public void Fall()
     {
 
-        if (thisRB.velocity.y < -fallSpeedMax)
+        if (thisRB.velocity.y < -verticalFallSpeedMax)
         {
-            thisRB.velocity += new Vector2(0, -fallSpeedMax - thisRB.velocity.y);
+            thisRB.velocity += new Vector2(0, -verticalFallSpeedMax - thisRB.velocity.y);
             //Debug.Log(thisRB.velocity.y);
         }
 
@@ -559,7 +547,7 @@ public class PlayerController : MonoBehaviour
     public void Hold()
     {
         ClearVelocity();
-        fallSpeedMax = 0f;
+        verticalFallSpeedMax     = 0f;
         thisPR.GravityLock(0);
         thisPR.isHolding = true;//这两个不是在PR其实也是锁0重力 看看需不需要优化
         canTurnAround = false;
@@ -567,7 +555,7 @@ public class PlayerController : MonoBehaviour
 
     public void EndHold()
     {
-        fallSpeedMax = airFallSpeedMax;
+        verticalFallSpeedMax = airFallSpeedMax;
         thisPR.GravityUnlock();
         thisPR.isHolding = false;
         canTurnAround = true;
@@ -599,8 +587,8 @@ public class PlayerController : MonoBehaviour
             thisPR.GravityLock(0);
             canTurnAround = false;
             thisPR.isHolding = true;
-            climbSpeed = wallClimbSpeed;
-            climbSpeedMax = wallClimbSpeedMax;
+            verticalMoveSpeed = wallClimbSpeed;
+            verticalMoveSpeedMax = wallClimbSpeedMax;
         }
         //else if (stateMachine.currentState == ropeClimbState)
         //{
@@ -629,11 +617,11 @@ public class PlayerController : MonoBehaviour
 
     public void Climb()
     {
-        if (Mathf.Abs(thisRB.velocity.y + verticalInputVec * climbSpeed * Time.deltaTime) < climbSpeedMax)//在考虑到的情况中，该方案和上一句效果相同
+        if (Mathf.Abs(thisRB.velocity.y + verticalInputVec * verticalMoveSpeed * Time.deltaTime) < verticalMoveSpeedMax)//在考虑到的情况中，该方案和上一句效果相同
         {
-            if (Mathf.Abs(thisRB.velocity.y) < climbThresholdSpeed) thisRB.velocity += new Vector2(0f, verticalInputVec * (climbThresholdSpeed + climbSpeed * Time.deltaTime));
+            if (Mathf.Abs(thisRB.velocity.y) < verticalThresholdSpeed) thisRB.velocity += new Vector2(0f, verticalInputVec * (verticalThresholdSpeed + verticalMoveSpeed * Time.deltaTime));
             else
-                thisRB.velocity += new Vector2(0f, verticalInputVec * climbSpeed * Time.deltaTime);
+                thisRB.velocity += new Vector2(0f, verticalInputVec * verticalMoveSpeed * Time.deltaTime);
         }
     }
     #endregion
@@ -696,7 +684,7 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            if (thisPR.isGround)
+            if (thisPR.IsOnGround())
             {
                 stateMachine.ChangeState(idleState);
                 return;
@@ -857,22 +845,22 @@ public class PlayerController : MonoBehaviour
 
     public void GroundVelocityLimit()//用于限制玩家移动速度上限
     {
-        if (Mathf.Abs(thisRB.velocity.x) > moveSpeedMax)
+        if (Mathf.Abs(thisRB.velocity.x) > horizontalMoveSpeedMax)
         {
             //Debug.Log("慢！");
-            thisRB.velocity += new Vector2(faceDir * moveSpeedMax - thisRB.velocity.x, 0f);
+            thisRB.velocity += new Vector2(faceDir * horizontalMoveSpeedMax - thisRB.velocity.x, 0f);
         }
 
     }
 
     public void GroundInertialClear()//用于清除玩家Idle状态下的残留惯性
     {
-        if (Mathf.Abs(thisRB.velocity.x) < moveThresholdSpeed) thisRB.velocity += new Vector2(-thisRB.velocity.x, 0f);
+        if (Mathf.Abs(thisRB.velocity.x) < horizontalmoveThresholdSpeed) thisRB.velocity += new Vector2(-thisRB.velocity.x, 0f);
     }
     public void InertiaXVelocity()
     {
         //Debug.Log(Mathf.Lerp(Mathf.Abs(thisRB.velocity.x), moveSpeedMax, .1f));
-        thisRB.velocity = new Vector2(faceDir * Mathf.Lerp(Mathf.Abs(thisRB.velocity.x), moveSpeedMax, .1f), 0f);
+        thisRB.velocity = new Vector2(faceDir * Mathf.Lerp(Mathf.Abs(thisRB.velocity.x), horizontalMoveSpeedMax, .1f), 0f);
         //Debug.Log("在惯性减速" + thisRB.velocity.x);
     }
     #endregion

@@ -21,23 +21,108 @@ public class PlayerMoveState : PlayerState
     public override void Update()
     {
         base.Update();
-        KeepInertiaCount();
+        //KeepInertiaCount();
         Move();
-        isAir();
+        WhetherExit();
     }
 
     protected override void CurrentStateCandoChange()
     {
         base.CurrentStateCandoChange();
+        player.canHorizontalMove = true;
+        player.canVerticalMove = false;
+        player.canJumpCounter = player.canJumpLength;
+        player.canWallJump = false;
+        player.WhetherCanHold();
+        player.canWallFall = false;
+        player.canAttack = true;
+        player.canCooldown = true;
     }
 
     protected override void CurrentStateCandoUpdate()
     {
         base.CurrentStateCandoUpdate();
+        player.WhetherCanHold();
+        player.WhetherCanJump();
+        player.WhetherCanWallFall();
+        player.WhetherCanDash();
     }
 
 
+    private void Move()//标准？
+    {
+        if (player.isGameplay)
+        {
+            if (!player.isUncontrol)
+            {
+                if (Mathf.Abs(player.thisRB.velocity.x + player.horizontalInputVec * player.horizontalMoveSpeed * Time.deltaTime) < player.horizontalMoveSpeedMax)//在考虑到的情况中，该方案和上一句效果相同
+                {
+                    if (Mathf.Abs(player.thisRB.velocity.x) < player.horizontalmoveThresholdSpeed)
+                    {
+                        player.thisRB.velocity += new Vector2(player.horizontalInputVec * (player.horizontalmoveThresholdSpeed + player.horizontalMoveSpeed * Time.deltaTime), 0f);
+                    }
+                    else
+                    {
+                        player.thisRB.velocity += new Vector2(player.horizontalInputVec * player.horizontalMoveSpeed * Time.deltaTime, 0f);
+                    }
+                }
+                else
+                {
+                    int Temp = (player.horizontalInputVec != 0) ? ((player.horizontalInputVec == player.faceDir) ? 1 : -1) : 0;
+                    if (Temp < 0)
+                    {
+                        player.thisRB.velocity += new Vector2(player.horizontalMoveSpeed * Temp * Time.deltaTime, 0f);
+                        //Debug.Log("超速状态下减速");
+                    }
+                    else
+                    {
+                        //Debug.Log("不会再加速");
+                    }
+                }
+            }
+            else
+            {
+                if (Mathf.Abs(player.thisRB.velocity.x + player.horizontalInputVec * player.horizontalMoveSpeed * Time.deltaTime) < player.horizontalMoveSpeedMax)//在考虑到的情况中，该方案和上一句效果相同
+                {
+                    switch (player.horizontalInputVec)
+                    {
+                        case 0:
+                            if (Mathf.Abs(player.thisRB.velocity.x) < player.horizontalmoveThresholdSpeed)
+                            {
+                                player.ClearXVelocity();
+                            }
+                            break;
+                        case 1:
+                            if (Mathf.Abs(player.thisRB.velocity.x) < player.horizontalmoveThresholdSpeed || player.horizontalInputVec != player.faceDir)
+                            { 
+                                player.thisRB.velocity += new Vector2(player.horizontalInputVec * (player.horizontalmoveThresholdSpeed + player.horizontalMoveSpeed * Time.deltaTime), 0f);
+                            }
+                            else
+                                player.thisRB.velocity += new Vector2(player.horizontalInputVec * player.horizontalMoveSpeed * Time.deltaTime, 0f);
+                            break;
+                        case -1:
+                            if (Mathf.Abs(player.thisRB.velocity.x) < player.horizontalmoveThresholdSpeed || player.horizontalInputVec != player.faceDir)
+                            {
+                                player.thisRB.velocity += new Vector2(player.horizontalInputVec * (player.horizontalmoveThresholdSpeed + player.horizontalMoveSpeed * Time.deltaTime), 0f);
+                            }
+                            else
+                                player.thisRB.velocity += new Vector2(player.horizontalInputVec * player.horizontalMoveSpeed * Time.deltaTime, 0f);
+                            break;
+                        default:
+                            Debug.Log("不应该出现这种情况");
+                            break;
+                    }
 
+
+                }
+                else
+                {
+                    Debug.Log("不会再加速");
+
+                }
+            }
+        }
+    }
 
     private void MoveEnter()
     {
@@ -45,35 +130,20 @@ public class PlayerMoveState : PlayerState
         {
             player.thisPR.GravityLock(player.thisPR.peakGravity);
         }
-        player.moveSpeed = player.normalmoveSpeed;
-        player.moveSpeedMax = player.normalmoveSpeedMax;
+        player.horizontalMoveSpeed = player.normalmoveSpeed;
+        player.horizontalMoveSpeedMax = player.normalmoveSpeedMax;
+        player.horizontalmoveThresholdSpeed = player.normalmoveThresholdSpeed;
     }
 
-    private void Move()
+    private void WhetherExit()
     {
-        if (player.isGameplay && !player.isUncontrol)
+        if (!player.thisPR.IsOnGround())
         {
-            float Temp = (player.horizontalInputVec != 0) ? ((player.horizontalInputVec == player.faceDir) ? 1 : -1) : 0;
-            if (Mathf.Abs(player.thisRB.velocity.x) <= player.moveSpeedMax)
-            {
-                player.thisRB.velocity += new Vector2((player.moveSpeed + Temp) * player.faceDir * Time.deltaTime, 0f);
-            }
-            else if (!player.keepInertia)
-            {
-                //Debug.Log("我必须减速");
-                player.thisRB.velocity += new Vector2((player.moveSpeedMax + Temp) * player.faceDir - player.thisRB.velocity.x, 0f);
-            }
+            player.ChangeToAirState();
         }
-        if (player.thisPR.isWall)
+        else if(Mathf.Abs(player.thisRB.velocity.x) < 0.1)
         {
-            player.TurnAround();
-        }
-    }
-    private void isAir()
-    {
-        if (!player.thisPR.isGround)
-        {
-            stateMachine.ChangeState(player.airState);
+            player.ChangeToIdleState();
         }
     }
     private void KeepInertiaCount()
@@ -81,7 +151,7 @@ public class PlayerMoveState : PlayerState
         if (player.keepInertia)
         {
             player.InertiaXVelocity();
-            if (Mathf.Abs(player.thisRB.velocity.x) < player.moveSpeedMax + 0.1f)
+            if (Mathf.Abs(player.thisRB.velocity.x) < player.horizontalMoveSpeedMax + 0.1f)
             {
                 player.thisPR.GravityUnlock();
                 player.keepInertia = false;

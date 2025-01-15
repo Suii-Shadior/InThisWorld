@@ -174,7 +174,7 @@ public class UIController : MonoBehaviour
 
     private void UICanvas()
     {
-        theBlackScreen.transform.gameObject.SetActive(true);
+        //theBlackScreen.transform.gameObject.SetActive(true);
         if (theLevel.currentSceneName == "LevelSelect")
         {
             theMainmenuUI.SetActive(false);
@@ -204,7 +204,7 @@ public class UIController : MonoBehaviour
         }
         else
         {
-            theMainmenuUI.SetActive(false);
+            //theMainmenuUI.SetActive(false);
             theGamePlayLevelUI.SetActive(true);
             theLevelSelectUI.SetActive(false);
             theGameEndUI.SetActive(false);
