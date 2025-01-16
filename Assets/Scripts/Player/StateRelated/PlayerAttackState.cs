@@ -67,7 +67,7 @@ public class PlayerAttackState : PlayerState
     protected override void CurrentStateCandoUpdate()
     {
         base.CurrentStateCandoUpdate();
-        player.WhetherCanJump();
+        player.WhetherCanJumpOrWallJump();
         player.WhetherCanDash();
         player.WhetherCanHold();
 

@@ -2025,7 +2025,7 @@ CompositeCollider2D:
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
-  m_GeometryType: 0
+  m_GeometryType: 1
   m_GenerationType: 0
   m_EdgeRadius: 0
   m_ColliderPaths:
@@ -2089,34 +2089,34 @@ CompositeCollider2D:
         Y: -55690476
   m_CompositePaths:
     m_Paths:
-    - - {x: 9.830953, y: 5.6309524}
-      - {x: -11.230952, y: 5.6309524}
-      - {x: -11.230952, y: -6.330952}
-      - {x: 9.830953, y: -6.330952}
-    - - {x: -8.369046, y: -5.5690475}
-      - {x: -8.369046, y: -4.169048}
-      - {x: -10.469047, y: -4.169048}
-      - {x: -10.469047, y: 4.8690476}
-      - {x: -7.030953, y: 4.8690476}
-      - {x: -7.030953, y: 2.7690475}
-      - {x: -4.169048, y: 2.7690475}
-      - {x: -4.169048, y: 4.8690476}
-      - {x: -0.7309524, y: 4.8690476}
-      - {x: -0.7309524, y: 4.1690474}
-      - {x: 0.7309524, y: 4.1690474}
-      - {x: 0.7309524, y: 4.8690476}
-      - {x: 9.069047, y: 4.8690476}
-      - {x: 9.069047, y: -5.5690475}
-      - {x: 4.930952, y: -5.5690475}
-      - {x: 4.930952, y: -4.169048}
-      - {x: 2.1309524, y: -4.169048}
-      - {x: 2.1309524, y: -0.6690476}
-      - {x: -0.0309523, y: -0.6690476}
-      - {x: -0.0309523, y: -4.8690476}
-      - {x: -2.0690477, y: -4.8690476}
-      - {x: -2.0690477, y: -3.4690475}
-      - {x: -4.2309523, y: -3.4690475}
-      - {x: -4.2309523, y: -5.5690475}
+    - - {x: 9.830923, y: -6.330952}
+      - {x: 9.830923, y: 5.6309524}
+      - {x: -11.230952, y: 5.6309233}
+      - {x: -11.230923, y: -6.330952}
+    - - {x: 9.069047, y: -5.5690184}
+      - {x: 4.930952, y: -5.5690184}
+      - {x: 4.930923, y: -4.169048}
+      - {x: 2.1309524, y: -4.1690183}
+      - {x: 2.1309233, y: -0.6690476}
+      - {x: -0.0309523, y: -0.6690769}
+      - {x: -0.0309817, y: -4.8690476}
+      - {x: -2.0690477, y: -4.8690186}
+      - {x: -2.0690768, y: -3.4690475}
+      - {x: -4.2309523, y: -3.4690769}
+      - {x: -4.230982, y: -5.5690475}
+      - {x: -8.369046, y: -5.5690184}
+      - {x: -8.369076, y: -4.169048}
+      - {x: -10.469047, y: -4.1690183}
+      - {x: -10.469017, y: 4.8690476}
+      - {x: -7.030953, y: 4.8690186}
+      - {x: -7.0309234, y: 2.7690475}
+      - {x: -4.169048, y: 2.7690768}
+      - {x: -4.1690183, y: 4.8690476}
+      - {x: -0.7309524, y: 4.8690186}
+      - {x: -0.7309231, y: 4.1690474}
+      - {x: 0.7309524, y: 4.1690764}
+      - {x: 0.7309818, y: 4.8690476}
+      - {x: 9.069047, y: 4.8690186}
   m_VertexDistance: 0.0005
   m_OffsetDistance: 0.00005
   m_UseDelaunayMesh: 0
@@ -20249,7 +20249,7 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 1
+  m_Mass: 3
   m_LinearDrag: 0
   m_AngularDrag: 0.05
   m_GravityScale: 0
@@ -20273,7 +20273,7 @@ Transform:
   m_GameObject: {fileID: 476915935}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -6.91, y: -5, z: 0}
+  m_LocalPosition: {x: -2.82, y: -3.04, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -20310,6 +20310,7 @@ MonoBehaviour:
   faceRight: 1
   faceDir: 1
   needTurnAround: 0
+  isUncontroling: 0
   horizontalInputVec: 0
   verticalInputVec: 0
   nowState: 
@@ -20324,7 +20325,6 @@ MonoBehaviour:
   babbleAbility: 0
   dashAbility: 0
   holdAbility: 0
-  canTurnAround: 1
   canHorizontalMove: 0
   canVerticalMove: 0
   canJump: 0
@@ -20333,8 +20333,9 @@ MonoBehaviour:
   canWallFall: 0
   canWallJump: 0
   canWallClimb: 0
-  canWallClimbForward: 0
   canAttack: 0
+  canTurnAround: 1
+  canWallClimbForward: 0
   canBabble: 0
   canCooldown: 0
   normalmoveSpeed: 4
@@ -20342,8 +20343,8 @@ MonoBehaviour:
   normalmoveThresholdSpeed: 4
   airmoveSpeed: 2
   airmoveSpeedMax: 4
-  airFallSpeedMax: 6
-  jumpForce: 10
+  airFallSpeedMax: 16
+  jumpForce: 40
   peakSpeed: 0
   canJumpCounter: 0
   canJumpLength: 0.1
@@ -20410,8 +20411,8 @@ MonoBehaviour:
   theWallCheckRadius: 0.1
   theForwardCheckRadius: 0.1
   theBackWallCheckRadius: 0.1
-  normalMat: {fileID: 0}
-  slipperMat: {fileID: 0}
+  normalMat: {fileID: 6200000, guid: 6d836b39841bd2f4eb5e3ec42f6eeac2, type: 2}
+  slipperMat: {fileID: 6200000, guid: 2a468371fc85a1944aa8e805b45238a2, type: 2}
   isPeak: 0
   isHolding: 0
   gravityLock: 0
@@ -40231,7 +40232,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!198 &992084456
 ParticleSystem:
   m_ObjectHideFlags: 0
@@ -44989,7 +44990,6 @@ ParticleSystemRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
-  - {fileID: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

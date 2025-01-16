@@ -31,19 +31,20 @@ public class PlayerMoveState : PlayerState
         base.CurrentStateCandoChange();
         player.canHorizontalMove = true;
         player.canVerticalMove = false;
-        player.canJumpCounter = player.canJumpLength;
-        player.canWallJump = false;
+        player.RefreshCanJump();
+        player.WhetherCanJumpOrWallJump();
+        player.WhetherCanDash();
         player.WhetherCanHold();
         player.canWallFall = false;
         player.canAttack = true;
-        player.canCooldown = true;
     }
 
     protected override void CurrentStateCandoUpdate()
     {
         base.CurrentStateCandoUpdate();
+        player.RefreshCanJump();
+        player.WhetherCanJumpOrWallJump();
         player.WhetherCanHold();
-        player.WhetherCanJump();
         player.WhetherCanWallFall();
         player.WhetherCanDash();
     }

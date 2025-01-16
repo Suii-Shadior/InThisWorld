@@ -25,13 +25,10 @@ public class PlayerHoldState : PlayerState
     public override void Update()
     {
         base.Update();
-        player.Fall();
-        if (player.canVerticalMove && player.verticalInputVec != 0)
-        {
-            stateMachine.ChangeState(player.wallClimbState);
-            return;
-        }
         CurrentStateCandoUpdate();
+        player.Fall();
+        WhetherExit();
+
     }
 
     protected override void CurrentStateCandoChange()
@@ -39,20 +36,26 @@ public class PlayerHoldState : PlayerState
         base.CurrentStateCandoChange();
         player.canHorizontalMove = false;
         player.canVerticalMove = true;
-        player.canJumpCounter = 0;
-        player.canWallJump = true;
-        player.canWallFall = true;
+        player.RefreshCanJump();
+        player.WhetherCanJumpOrWallJump();
+        player.WhetherCanDash();
+        player.WhetherCanHold();
+        //刚进入贴墙落状态，肯定可以继续该状态
         player.canAttack = false;
-        player.canHold = true;
     }
 
     protected override void CurrentStateCandoUpdate()
     {
         base.CurrentStateCandoUpdate();
-        player.WhetherCanJump();
+        player.RefreshCanJump();
+        player.WhetherCanJumpOrWallJump();
         player.WhetherCanHold();
-        player.WhetherCanWallVeritalForward();
         player.WhetherCanWallFall();
         player.WhetherCanDash();
+        //player.WhetherCanWallVeritalForward();
+    }
+    private void WhetherExit()
+    {
+        player.WhetherHoldOrWallFall();
     }
 }

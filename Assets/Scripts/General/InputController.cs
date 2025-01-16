@@ -101,10 +101,6 @@ public class InputController : MonoBehaviour
             };
         }
     }
-    private void Update()
-    {
-        Debug.Log(horizontalInputVec);
-    }
 
 
     public void GamePlayInput()

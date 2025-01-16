@@ -67,6 +67,15 @@ public class PlayerAnimatorController : MonoBehaviour
     {
         thisAnim.SetBool(_boolname, false);
     }
+
+    public void FlipX()
+    {
+        thisSR.flipX = !thisSR.flipX;
+    }
+    public void FlipY()
+    {
+        thisSR.flipY = !thisSR.flipY;
+    }
     #endregion
 
     #region 事件调用

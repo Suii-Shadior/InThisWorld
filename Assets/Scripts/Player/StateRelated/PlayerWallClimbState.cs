@@ -43,10 +43,10 @@ public class PlayerWallClimbState : PlayerState
     protected override void CurrentStateCandoUpdate()
     {
         base.CurrentStateCandoUpdate();
-        player.WhetherCanJump();
+        player.WhetherCanJumpOrWallJump();
         player.WhetherCanHold();
         player.WhetherCanWallFall();
-        player.WhetherCanWallVeritalForward();
         player.WhetherCanDash();
+        //player.WhetherCanWallVeritalForward();
     }
 }

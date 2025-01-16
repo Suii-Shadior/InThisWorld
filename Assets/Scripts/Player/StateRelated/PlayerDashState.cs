@@ -43,7 +43,7 @@ public class PlayerDashState : PlayerState
     protected override void CurrentStateCandoUpdate()
     {
         base.CurrentStateCandoUpdate();
-        player.WhetherCanJump();
+        player.WhetherCanJumpOrWallJump();
         player.WhetherCanHold();
         player.WhetherCanWallFall();
         player.WhetherCanDash();

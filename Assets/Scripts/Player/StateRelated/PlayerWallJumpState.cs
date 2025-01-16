@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
-public class PlayerWallJumpState : PlayerState
+public class PlayerWallJumpState : PlayerState//TD：需要和Air状态进行合并，把WallJump动作及所有动作都剥离出去
 {
     public PlayerWallJumpState(PlayerController _player, PlayerStateMachine _stateMachine, string _animBoolName) : base(_player, _stateMachine, _animBoolName)
     {
@@ -11,26 +12,25 @@ public class PlayerWallJumpState : PlayerState
     public override void Enter()
     {
         base.Enter();
-        player.WallJump();
+        player.thisAC.FlipX();
+        WallJump();
         CurrentStateCandoChange();
     }
 
     public override void Exit()
     {
         base.Exit();
-        player.WallJumpdEnd();
+        WallJumpdEnd();
     }
 
     public override void Update()
     {
         base.Update();
         CurrentStateCandoUpdate();
+        WallJumpCount();
         Move();
-        if (player.thisRB.velocity.y < -player.peakSpeed)
-        {
-            stateMachine.ChangeState(player.airState);
-            return;
-        }
+        WhetherExit();
+
     }
     private void Move()
     {
@@ -65,11 +65,47 @@ public class PlayerWallJumpState : PlayerState
             }
             else
             {
-                if (Mathf.Abs(player.thisRB.velocity.x + player.horizontalInputVec * player.horizontalMoveSpeed * Time.deltaTime) < player.horizontalMoveSpeedMax)//在考虑到的情况中，该方案和上一句效果相同
+                if (player.canHorizontalMove)
                 {
-                    if (Mathf.Abs(player.thisRB.velocity.x) < player.horizontalmoveThresholdSpeed) player.thisRB.velocity += new Vector2(player.horizontalInputVec * (player.horizontalmoveThresholdSpeed + player.horizontalMoveSpeed * Time.deltaTime), 0f);
+                    if (Mathf.Abs(player.thisRB.velocity.x + player.horizontalInputVec * player.horizontalMoveSpeed * Time.deltaTime) < player.horizontalMoveSpeedMax)//在考虑到的情况中，该方案和上一句效果相同
+                    {
+                        switch (player.horizontalInputVec)
+                        {
+                            case 0:
+                                if (Mathf.Abs(player.thisRB.velocity.x) < player.horizontalmoveThresholdSpeed)
+                                {
+                                    player.ClearXVelocity();
+                                }
+                                break;
+                            case 1:
+                                if (Mathf.Abs(player.thisRB.velocity.x) < player.horizontalmoveThresholdSpeed || player.horizontalInputVec != player.faceDir)
+                                {
+                                    player.thisRB.velocity += new Vector2(player.horizontalInputVec * (player.horizontalmoveThresholdSpeed + player.horizontalMoveSpeed * Time.deltaTime), 0f);
+                                }
+                                else
+                                    player.thisRB.velocity += new Vector2(player.horizontalInputVec * player.horizontalMoveSpeed * Time.deltaTime, 0f);
+                                break;
+                            case -1:
+                                if (Mathf.Abs(player.thisRB.velocity.x) < player.horizontalmoveThresholdSpeed || player.horizontalInputVec != player.faceDir)
+                                {
+                                    player.thisRB.velocity += new Vector2(player.horizontalInputVec * (player.horizontalmoveThresholdSpeed + player.horizontalMoveSpeed * Time.deltaTime), 0f);
+                                }
+                                else
+                                    player.thisRB.velocity += new Vector2(player.horizontalInputVec * player.horizontalMoveSpeed * Time.deltaTime, 0f);
+                                break;
+                            default:
+                                Debug.Log("不应该出现这种情况");
+                                break;
+                        }
+                    }
                     else
-                        player.thisRB.velocity += new Vector2(player.horizontalInputVec * player.horizontalMoveSpeed * Time.deltaTime, 0f);
+                    {
+                        Debug.Log("不会再加速");
+                    }
+                }
+                else
+                {
+                    Debug.Log("强制蹬墙期间");
                 }
             }
         }
@@ -79,25 +115,66 @@ public class PlayerWallJumpState : PlayerState
         base.CurrentStateCandoChange();
         player.canHorizontalMove = false;
         player.canVerticalMove = false;
-        player.canJumpCounter = 0;
-        player.canWallJump = false;
-        player.canHold = false;
-        player.canWallFall = true;
-        player.canAttack = false;
-
+        //才跳跃，操作逻辑上来看不可能马上又能跳跃的，所以并不刷新操作相关的脱台跳时间
+        //但是有可能吃到一些道具，使得实现可以无限跳跃，所以依旧要判断是否能跳跃
+        player.WhetherCanJumpOrWallJump();
+        player.WhetherCanDash();
+        player.WhetherCanHold();
+        player.canWallFall = false;
+        player.canAttack = true;
 
     }
 
     protected override void CurrentStateCandoUpdate()
     {
         base.CurrentStateCandoUpdate();
+        player.WhetherCanJumpOrWallJump();
         player.WhetherCanHold();
         player.WhetherCanWallFall();
         player.WhetherCanDash();
+
+    }
+    public void WallJump()
+    {
+        player.wallJumpPostCounter = player.wallJumpPostLength;
+        player.thisPR.GravityLock(2f);
+        player.thisRB.AddForce(new Vector2(-player.faceDir, 2) * player.wallJumpForce, ForceMode2D.Impulse);
+        player.needTurnAround = true;
+        player.faceRight = !player.faceRight;
+        player.thisPR.LeaveWall();
+    }
+    public void WallJumpdEnd()
+    {
+        player.thisPR.GravityUnlock();
+        player.canHorizontalMove = true;
+        player.WhetherCanHold();
+    }
+    private void WallJumpCount()
+    {
         if (player.wallJumpPostCounter > 0) player.wallJumpPostCounter -= Time.deltaTime;
         else
         {
-            player.WallJumpdEnd();
+            WallJumpdEnd();
+        }
+
+    }
+
+    private void WhetherExit()
+    {
+
+        if (player.thisRB.velocity.y < -player.peakSpeed)
+        {
+            stateMachine.ChangeState(player.airState);
+            return;
+        }
+        else if (player.thisPR.IsOnGround())
+        {
+            stateMachine.ChangeState(player.idleState);
+            return;
+        }
+        else
+        {
+            player.WhetherHoldOrWallFall();
         }
     }
 }

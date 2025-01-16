@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerWallFallState : PlayerState
@@ -18,14 +19,16 @@ public class PlayerWallFallState : PlayerState
     public override void Exit()
     {
         base.Exit();
+        
     }
 
     public override void Update()
     {
         base.Update();
         CurrentStateCandoUpdate();
-        player.WhetherHoldOrWallFall();
         player.Fall();
+        WhetherExit();
+        player.WhetherHoldOrWallFall();
     }
 
     protected override void CurrentStateCandoChange()
@@ -33,20 +36,37 @@ public class PlayerWallFallState : PlayerState
         base.CurrentStateCandoChange();
         player.canHorizontalMove = true;
         player.canVerticalMove = false;
-        player.canJumpCounter = 0;
-        player.canWallJump = true;
-        player.canHold = true;
-        player.canWallFall = true;
+        player.RefreshCanJump();
+        player.WhetherCanJumpOrWallJump();
+        player.WhetherCanDash();
+        player.WhetherCanHold();
+        //刚进入贴墙落状态，肯定可以继续该状态
         player.canAttack = false;
     }
 
     protected override void CurrentStateCandoUpdate()
     {
         base.CurrentStateCandoUpdate();
-        player.WhetherCanJump();
+        player.RefreshCanJump();
+        player.WhetherCanJumpOrWallJump();
         player.WhetherCanHold();
         player.WhetherCanWallFall();
-        player.WhetherCanWallVeritalForward();
         player.WhetherCanDash();
+        //player.WhetherCanWallVeritalForward();
+    }
+    private void WhetherExit()
+    {
+
+        if (player.thisPR.IsOnGround())
+        {
+            player.needTurnAround = true;
+            player.thisAC.FlipX();
+            stateMachine.ChangeState(player.idleState);
+        }
+        else
+        {
+            
+            player.WhetherHoldOrWallFall();
+        }
     }
 }

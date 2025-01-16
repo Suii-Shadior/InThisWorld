@@ -1,7 +1,7 @@
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class PlayerAirState : PlayerState
+public class PlayerAirState : PlayerState//TD：需要和Jump状态进行合并
 {
     public PlayerAirState(PlayerController _player, PlayerStateMachine _stateMachine, string _animBoolName) : base(_player, _stateMachine, _animBoolName)
     {
@@ -27,7 +27,9 @@ public class PlayerAirState : PlayerState
         //KeepInertiaCount();//先注释掉，可以改
         Move();
         Fall();
-
+        CurrentStateCandoUpdate();
+        player.IsPeak();
+        WhetherExit();
 
     }
 
@@ -36,29 +38,32 @@ public class PlayerAirState : PlayerState
         base.CurrentStateCandoChange();
         player.canHorizontalMove = true;
         player.canVerticalMove = false;
-        player.canWallJump = false;
+        //才跳跃，操作逻辑上来看不可能马上又能跳跃的，所以并不刷新操作相关的脱台跳时间
+        //但是有可能吃到一些道具，使得实现可以无限跳跃，所以依旧要判断是否能跳跃
+        player.WhetherCanJumpOrWallJump();
+        player.WhetherCanDash();
         player.WhetherCanHold();
         player.canWallFall = false;
         player.canAttack = true;
-        player.canCooldown = true;
 
     }
 
     protected override void CurrentStateCandoUpdate()
     {
         base.CurrentStateCandoUpdate();
+        player.WhetherCanJumpOrWallJump();
         player.WhetherCanHold();
-        player.WhetherCanJump();
         player.WhetherCanWallFall();
         player.WhetherCanDash();
     }
 
     private void AirEnter()
     {
-        if (player.keepInertia)
-        {
-            player.thisPR.GravityLock(player.thisPR.peakGravity);
-        }
+        //if (player.keepInertia)
+        //{
+        //    player.thisPR.GravityLock(player.thisPR.peakGravity);
+        //}
+
         player.horizontalMoveSpeed = player.airmoveSpeed;
         player.horizontalMoveSpeedMax = player.airmoveSpeedMax;
         player.verticalFallSpeedMax = player.airFallSpeedMax;
@@ -139,16 +144,25 @@ public class PlayerAirState : PlayerState
             }
         }
     }
-    public void Fall()
-    {
 
+    private void Fall()
+    {
         if (player.thisRB.velocity.y < -player.verticalFallSpeedMax)
         {
             player.thisRB.velocity += new Vector2(0, -player.verticalFallSpeedMax - player.thisRB.velocity.y);
         }
+    }
+    public void WhetherExit()
+    {
+
+
         if (player.thisPR.IsOnGround())
         {
             stateMachine.ChangeState(player.idleState);
+        }
+        else
+        {
+            player.WhetherHoldOrWallFall();
         }
     }
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class PlayerJumpState : PlayerState
+public class PlayerJumpState : PlayerState//TD：需要和Air状态进行合并，把Jump动作剥离出去
 {
     public PlayerJumpState(PlayerController _player, PlayerStateMachine _stateMachine, string _animBoolName) : base(_player, _stateMachine, _animBoolName)
     {
@@ -32,9 +32,9 @@ public class PlayerJumpState : PlayerState
     {
         base.Update();
         CurrentStateCandoUpdate();
-
         Move();//在跳起过程中X轴移动速度仍然保持相同的加速度
-        SlowDown(); 
+        player.IsPeak();
+        WhetherExit(); 
     }
     private void Move()
     {
@@ -115,28 +115,37 @@ public class PlayerJumpState : PlayerState
         base.CurrentStateCandoChange();
         player.canHorizontalMove = true;
         player.canVerticalMove = false;
-        player.canWallJump = false;
+        //才跳跃，操作逻辑上来看不可能马上又能跳跃的，所以并不刷新操作相关的脱台跳时间
+        //但是有可能吃到一些道具，使得实现可以无限跳跃，所以依旧要判断是否能跳跃
+        player.WhetherCanJumpOrWallJump();
+        player.WhetherCanDash();
         player.WhetherCanHold();
         player.canWallFall = false;
         player.canAttack = true;
-        player.canCooldown = true;
 
     }
 
-    private void SlowDown()
+    private void WhetherExit()//
     {
-        if (player.thisRB.velocity.y < -player.peakSpeed) stateMachine.ChangeState(player.airState);
-        if (player.thisPR.IsOnGround())
+        if (player.thisRB.velocity.y < -player.peakSpeed) 
+        {
+            stateMachine.ChangeState(player.airState);
+        }
+        else if (player.thisPR.IsOnGround())
         {
             stateMachine.ChangeState(player.idleState);
+        }
+        else
+        {
+            player.WhetherHoldOrWallFall();
         }
     }
 
     protected override void CurrentStateCandoUpdate()
     {
         base.CurrentStateCandoUpdate();
+        player.WhetherCanJumpOrWallJump();
         player.WhetherCanHold();
-        player.WhetherCanJump();
         player.WhetherCanWallFall();
         player.WhetherCanDash();
     }

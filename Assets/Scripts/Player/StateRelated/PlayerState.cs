@@ -1,4 +1,4 @@
-public class PlayerState
+public class PlayerState//TD:要把这里面的Update和FixUpdate区分
 {
     #region 状态机相关
     protected PlayerStateMachine stateMachine;

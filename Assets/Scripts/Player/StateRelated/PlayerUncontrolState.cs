@@ -10,6 +10,7 @@ public class PlayerUncontrolState : PlayerState
     {
         base.Enter();
         player.ClearVelocity();
+        player.canTurnAround = false;
         player.isUncontrol = true;
 
 
@@ -19,7 +20,7 @@ public class PlayerUncontrolState : PlayerState
     {
         base.Exit();
         player.uncontrolCounter = 0;
-
+        player.canTurnAround = true;
 
     }
 

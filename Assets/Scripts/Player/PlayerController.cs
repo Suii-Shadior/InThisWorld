@@ -43,7 +43,11 @@ public class PlayerController : MonoBehaviour
     public float deadUnactDuration;
     public bool faceRight = true;//faceRight是可以通过输入或者外部情况进行转换的对象，是条件
     public int faceDir = 1;//faceDir是通过多个条件进行判断的面向，是结果
-    public bool needTurnAround;//对于敌人以及演出时的玩家，需要通过该标识进行转身
+    public bool needTurnAround;//需要通过该标识进行转身
+    //isUncontroling用于表示非uncontrolState中部分行为受限的表示，比如蹬墙跳时候的短时间内不能转身，通常满足了一定条件后该状态就会取消，但是又不改变当前状态；
+    //uncontrolState用于表示当前状态下角色所有行为受限。比如受伤后的短暂时间内什么都不能干，通常经过了一段时间后该状态就会取消
+    //unAct用于使用在暂停，或者复活、剧情动画时玩家没有可能在相当长的不确定时间内不能操作角色，只有特定的行为完成后才能取消
+    public bool isUncontroling;
     public int horizontalInputVec; 
     public int verticalInputVec;
 
@@ -64,7 +68,6 @@ public class PlayerController : MonoBehaviour
     public bool holdAbility;
 
     [Header("行动状态")]
-    public bool canTurnAround;
     public bool canHorizontalMove;
     public bool canVerticalMove;
     public bool canJump;
@@ -73,8 +76,12 @@ public class PlayerController : MonoBehaviour
     public bool canWallFall;
     public bool canWallJump;
     public bool canWallClimb;
-    public bool canWallClimbForward;//要记录下蔚蓝怎么处理的
     public bool canAttack;
+
+    [HideInInspector] public bool canTurnAround;
+    [HideInInspector]public bool canWallClimbForward;//要记录下蔚蓝怎么处理的
+
+    [Header("技能状态")]
     public bool canBabble;
     public bool canCooldown;    
 
@@ -217,7 +224,7 @@ public class PlayerController : MonoBehaviour
         moveState = new PlayerMoveState(this, stateMachine, "isHorizontalMoving");
         jumpState = new PlayerJumpState(this, stateMachine, "isAiring");
         wallFallState = new PlayerWallFallState(this, stateMachine, "isWallFalling");
-        walljumpState = new PlayerWallJumpState(this, stateMachine, "isJumping");//等相应素材
+        walljumpState = new PlayerWallJumpState(this, stateMachine, "isAiring");//等相应素材
         holdState = new PlayerHoldState(this, stateMachine, "isHolding");
         wallClimbState = new PlayerWallClimbState(this, stateMachine, "isWallClimbing");
         attackState = new PlayerAttackState(this, stateMachine, "isAttacking");
@@ -241,6 +248,7 @@ public class PlayerController : MonoBehaviour
         {
             GameplayCooldownCount();
             CanActCount();
+            
         }
     }
 
@@ -251,16 +259,18 @@ public class PlayerController : MonoBehaviour
         {
             thisPR.PRUpdate();
             stateMachine.currentState.Update();
+            TurnAround();
             FaceDirUpdate();
         }
     }
 
-    public void TurnAround()
+    private void TurnAround()
     {
-        if (canTurnAround)
+        if (canTurnAround&&needTurnAround)
         {
+            Debug.Log("转身");
             faceRight = !faceRight;
-            canTurnAround = true;
+            needTurnAround = false;
         }
     }
 
@@ -412,25 +422,40 @@ public class PlayerController : MonoBehaviour
 
     #region Gameplay方法
     #region Can判断
-    public void WhetherCanJump()
+    public void WhetherCanJumpOrWallJump()//TD：加入蹭墙跳与蹬墙跳进行区分
     {
-        if (canJumpCounter >= 0f)
+        if (canJumpCounter > 0f)
         {
-            canJumpCounter -= Time.deltaTime;
-            if (stateMachine.currentState == attackState) 
-
+            if (stateMachine.currentState == wallFallState || stateMachine.currentState == wallClimbState || stateMachine.currentState == holdState)
             {
                 canJump = false;
+                canWallJump = true;
+            }
+            else if(stateMachine.currentState == idleState|| stateMachine.currentState == moveState)
+            {
+                canJump = true;
+                canWallJump = false;
+            }
+            if (stateMachine.currentState == attackState) 
+            {
+                canJump = false;
+                canWallJump = false;
             }
             else
             {
-                Debug.Log("???");
+                //Debug.Log("在此判断是否可以蹭墙跳");
+                //实际上，冲刺和非控根本不会到这，所以这里是进行跳跃下落和打伞时候的脱台跳判断
                 canJump = true;
+                canWallJump = false;
             }
+            canJumpCounter -= Time.deltaTime;
         }
         else
         {
+            //冲刺和非控直接将脱台跳计时置0至此来实现无法跳跃
+            //所以这里可以进行跳跃下落和打伞时候的蹭墙判断
             canJump = false;
+            canWallJump = false;
         }
 
     }
@@ -460,7 +485,7 @@ public class PlayerController : MonoBehaviour
             canDash = false;
         }
     }
-    public void WhetherCanWallVeritalForward()
+    public void WhetherCanWallVeritalForward()//TD:调整至上下移动本身的语句中去判断
     {
         if (thisPR.isBackWall)
         {
@@ -484,7 +509,7 @@ public class PlayerController : MonoBehaviour
     {
         canJumpCounter = canJumpLength;
     }
-    public void RefreshCanDash()
+    public void RefreshCanDash_CooldownNeglect()
     {
         canDash = true;
     }
@@ -492,19 +517,25 @@ public class PlayerController : MonoBehaviour
     #endregion 
 
     #region 动作
-    public void FaceDirUpdate()//单看不合理，但是结合MoveToDir来看可以实现滑行？
+    public void FaceDirUpdate()
     {
         if (stateMachine.currentState != uncontrolState)
         {
-            if (canTurnAround)
+
+            if (horizontalInputVec > 0) faceRight = true;//MoveToDir,用于判断玩家想要移动的方向
+            else if (horizontalInputVec < 0) faceRight = false;
+            else
             {
-                if (horizontalInputVec > 0) faceRight = true;//MoveToDir,用于判断玩家想要移动的方向
-                else if (horizontalInputVec < 0) faceRight = false;
+                Debug.Log("朝向不变");
             }
+
             faceDir = (int)transform.localScale.x;
-            if (thisRB.velocity.x > 0 && faceRight) faceDir = 1;
-            else if (thisRB.velocity.x < 0 && !faceRight) faceDir = -1;
+            if(thisRB.velocity.x!=0) faceDir = faceRight ? 1 : -1;
             transform.localScale = new Vector3(faceDir, 1, 1);
+        }
+        else
+        {
+            //Debug.Log("不能控制状态下自然不能转向");
         }
     }
 
@@ -547,7 +578,7 @@ public class PlayerController : MonoBehaviour
     public void Hold()
     {
         ClearVelocity();
-        verticalFallSpeedMax     = 0f;
+        verticalFallSpeedMax = 0f;
         thisPR.GravityLock(0);
         thisPR.isHolding = true;//这两个不是在PR其实也是锁0重力 看看需不需要优化
         canTurnAround = false;
@@ -561,22 +592,7 @@ public class PlayerController : MonoBehaviour
         canTurnAround = true;
     }
 
-    public void WallJump()
-    {
-        wallJumpPostCounter = wallJumpPostLength;
-        thisPR.GravityLock(2f);
-        thisRB.AddForce(new Vector2(-faceDir, 2) * wallJumpForce, ForceMode2D.Impulse);
-        canTurnAround = false;
-        faceRight = !faceRight;
-        thisPR.LeaveWall();
-    }
-    public void WallJumpdEnd()
-    {
-        thisPR.GravityUnlock();
-        canHorizontalMove = true;
-        WhetherCanHold();
-        canTurnAround = true;
-    }
+
 
 
     public void ClimbPrepare()
@@ -866,7 +882,7 @@ public class PlayerController : MonoBehaviour
     #endregion
     #region PR相关方法
 
-    public void WhetherHoldOrWallFall()
+    public void WhetherHoldOrWallFall()//TD：这个方法相当复杂，需要拆分
     {
 
         if (stateMachine.currentState == wallFallState)
@@ -887,6 +903,7 @@ public class PlayerController : MonoBehaviour
             //wallJump会掉头且有冻结时间canHold在一定时间内false,为了在墙上或墙边按下跳跃能够跳出来而不是在跳跃瞬间又判定抓住
             else if (!canAct || !canWallFall || horizontalInputVec != faceDir)
             {
+                thisAC.FlipX();
                 stateMachine.ChangeState(airState);
                 return;
             }
@@ -908,24 +925,51 @@ public class PlayerController : MonoBehaviour
             }
             else
             {
+                thisAC.FlipX();
                 stateMachine.ChangeState(airState);
                 return;
             }
         }
         else if (stateMachine.currentState == holdState)
         {
-            if (canAct && canVerticalMove && verticalInputVec != 0)
+            if(!canAct || !canHold || !theInput.WhetherZPressing())
             {
-                stateMachine.ChangeState(wallClimbState);
+                thisAC.FlipX();
+                stateMachine.ChangeState(airState);
                 return;
             }
-            else if (canAct && canWallFall && horizontalInputVec == faceDir)
+            else if (canVerticalMove)
+            {
+                if (verticalInputVec > 0)
+                {
+                    //if(player.canHorizontalMove)
+                    //{
+                    //  stateMachine.ChangeState(player.climbOnState);
+                    //}
+                    //else{
+                    stateMachine.ChangeState(wallClimbState);
+                    return;
+                    //}
+                }
+                else if (verticalInputVec < 0)
+                {
+                    stateMachine.ChangeState(wallClimbState);
+                    return;
+                }
+                else
+                {
+                    //Debug.Log("维持当前");
+                    return;
+                }
+            }
+            else if (canWallFall && horizontalInputVec == faceDir)
             {
                 stateMachine.ChangeState(wallFallState);
                 return;
             }
             else
             {
+                thisAC.FlipX();
                 stateMachine.ChangeState(airState);
                 return;
             }
@@ -934,25 +978,49 @@ public class PlayerController : MonoBehaviour
         {
             if (canAct && canHold && theInput.WhetherZPressing())
             {
-                if (canVerticalMove && verticalInputVec != 0)
+                if (canVerticalMove)
                 {
-                    stateMachine.ChangeState(wallClimbState);
-                    return;
+                    if (verticalInputVec > 0)
+                    {
+                        //if(player.canHorizontalMove)
+                        //{
+                        //  stateMachine.ChangeState(player.climbOnState);
+                        //}
+                        //else{
+                        thisAC.FlipX();
+                        stateMachine.ChangeState(wallClimbState);
+                        return;
+                        //}
+                    }
+                    else if (verticalInputVec < 0)
+                    {
+                        thisAC.FlipX();
+                        stateMachine.ChangeState(wallClimbState);
+                        return;
+                    }
+                    else
+                    {
+                        //Debug.Log("维持当前");
+                        return;
+                    }
                 }
                 else
                 {
+                    thisAC.FlipX();
                     stateMachine.ChangeState(holdState);
                     return;
                 }
             }
             if (canAct && canWallFall && horizontalInputVec == faceDir)
             {
+                thisAC.FlipX();
                 stateMachine.ChangeState(wallFallState);
                 return;
             }
             else
             {
-                stateMachine.ChangeState(airState);
+
+                //Debug.Log("维持现状即可");
                 return;
             }
         }
