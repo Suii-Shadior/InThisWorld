@@ -10,12 +10,10 @@ public class UIController : MonoBehaviour
     private PlayerController thePlayer;
     private LevelController theLevel;
     private InputController theInput;
-    private DialogeController theDC;
+    private DialogeController theDC;//用于触发对话
 
     [SerializeField] private GameObject theMainmenuUI;
     [SerializeField] private GameObject theGamePlayLevelUI;
-    [SerializeField] private GameObject theLevelSelectUI;
-    [SerializeField] private GameObject theGameEndUI;
     [SerializeField] private GameObject thePauseUI;
     [SerializeField] private GameObject theDialogeUI;
 
@@ -28,30 +26,30 @@ public class UIController : MonoBehaviour
 
 
     [Header("MainMenu Info")]
-    public GameObject theStartButton;
-    public GameObject theContinueButton;
-    public GameObject theQuitButton;
-    public Transform theFirstStartPos;
-    public Transform theFirstQuitPos;
+    //public GameObject theStartButton;
+    //public GameObject theContinueButton;
+    //public GameObject theQuitButton;
+    //public Transform theFirstStartPos;
+    //public Transform theFirstQuitPos;
 
 
 
     [Header("Skill Info")]
-    public Image thePullInfo;
-    public Image thePullGrayInfo;
-    public Image theBoomInfo;
-    public Image theElectricInfo;
-    public Image thePlantInfo;
-    public Image theBabbleInfo;
-    public TextMeshProUGUI thePullText;
-    public TextMeshProUGUI theBoomText;
-    public TextMeshProUGUI theElectricText;
-    public TextMeshProUGUI thePlantText;
-    public TextMeshProUGUI theBabbleText;
-    private Vector4 uncooldownColor = new Vector4(1, 1, 1, 0);
-    private Vector4 cooldownColor = new Vector4(0, 0, 0, 1);
-    public Sprite NoAbilitySprite;
-    public List<Image> needCooldownSkills = new List<Image>();
+    //public Image thePullInfo;
+    //public Image thePullGrayInfo;
+    //public Image theBoomInfo;
+    //public Image theElectricInfo;
+    //public Image thePlantInfo;
+    //public Image theBabbleInfo;
+    //public TextMeshProUGUI thePullText;
+    //public TextMeshProUGUI theBoomText;
+    //public TextMeshProUGUI theElectricText;
+    //public TextMeshProUGUI thePlantText;
+    //public TextMeshProUGUI theBabbleText;
+    //private Vector4 uncooldownColor = new Vector4(1, 1, 1, 0);
+    //private Vector4 cooldownColor = new Vector4(0, 0, 0, 1);
+    //public Sprite NoAbilitySprite;
+    //public List<Image> needCooldownSkills = new List<Image>();
     [Header("Dialogue")]
     public bool isDialogue;
     private void Awake()
@@ -64,16 +62,17 @@ public class UIController : MonoBehaviour
         thePlayer = thisCM.thePlayer;
         theInput = thisCM.theInput;
         theDC = thisCM.theDC;
-        UICanvas();
-        UIDisplay();
+        UICanvasSelect();
+        UIObjectsUpdate();
         FadeIn();
     }
 
 
     private void Update()
     {
-        FadeInOrFadeOut();
-        SkillDisplayUpdate();
+        FadeInOrFadeOut();//Step1.淡入淡出
+        UIDisplayUpdate();//Step2.更新其他全局UI相关信息，例如事件，血量，分数
+        //Step3.更新其他非全局UI信息，例如触发提示
     }
 
     #region 基本方法
@@ -116,102 +115,50 @@ public class UIController : MonoBehaviour
 
     #endregion
     #region GUI方法
-    public void UIDisplay()//根据游戏进度调整UI显示范围
-    {
-        if (theLevel.currentSceneName == "LevelSelect" || theLevel.currentSceneName == "GameEnd")
-        {
-
-        }
-        else if (theLevel.currentSceneName == "MainMenu")
-        {
-            if (!PlayerPrefs.HasKey("HasStartGame"))
-            {
-                theStartButton.transform.position = theFirstStartPos.position;
-                theContinueButton.SetActive(false);
-                theStartButton.GetComponentInChildren<TextMeshProUGUI>().text = "New Game";
-                theQuitButton.transform.position = theFirstQuitPos.position;
-            }
-            else
-            {
-            }
-        }
-        else
-        {
-            if (thePlayer.babbleAbility)
-            {
-                needCooldownSkills.Add(theBabbleInfo);
-            }
-            else
-            {
-                theBabbleInfo.sprite = NoAbilitySprite;
-
-            }
-        }
-    }
-    public void SkillDisplayUpdate()
-    {
-        //if (在Gameplay时)
-        //{   对需要进行冷却的所有对象进行遍历更新UI展示（包括计时和数值）
-        //    foreach (Image needCooldownSkill in needCooldownSkills)
-        //    {
-
-        //        switch (needCooldownSkill.name)
-        //        {
-        //            case "Q-Icon":
-        //                float TempRatio = thePlayer.pullCooldownCounter / thePlayer.pullCooldownDuration;
-        //                needCooldownSkill.fillAmount = 1 - TempRatio;
-        //                break;
-        //            case "W-Icon":
-        //                TempRatio = thePlayer.boomCooldownCounter / thePlayer.boomCooldownDuration;
-        //                needCooldownSkill.fillAmount = 1 - TempRatio;
-        //                break;
-        //        }
-        //    }
-        //    if (thePlayer.canPull) thePullText.color = cooldownColor;
-        //    else thePullText.color = uncooldownColor;
-        //}
-    }
-
-    private void UICanvas()
+    private void UICanvasSelect()//根据当前场景调整UI所在画布
     {
         //theBlackScreen.transform.gameObject.SetActive(true);
-        if (theLevel.currentSceneName == "LevelSelect")
-        {
-            theMainmenuUI.SetActive(false);
-            theGamePlayLevelUI.SetActive(false);
-            theLevelSelectUI.SetActive(true);
-            theGameEndUI.SetActive(false);
-            theBlackScreen.transform.SetParent(theLevelSelectUI.transform, false);
-
-
-        }
-        else if (theLevel.currentSceneName == "MainMenu")
+        if (theLevel.currentSceneName == "MainMenu")
         {
             theMainmenuUI.SetActive(true);
             theGamePlayLevelUI.SetActive(false);
-            theLevelSelectUI.SetActive(false);
-            theGameEndUI.SetActive(false);
             theBlackScreen.transform.SetParent(theMainmenuUI.transform, false);
-        }
-        else if (theLevel.currentSceneName == "GameEnd")
-        {
-            theMainmenuUI.SetActive(false);
-            theGamePlayLevelUI.SetActive(false);
-            theLevelSelectUI.SetActive(false);
-            theGameEndUI.SetActive(true);
-            theBlackScreen.transform.SetParent(theGameEndUI.transform, false);
-
         }
         else
         {
             //theMainmenuUI.SetActive(false);
             theGamePlayLevelUI.SetActive(true);
-            theLevelSelectUI.SetActive(false);
-            theGameEndUI.SetActive(false);
             theBlackScreen.transform.SetParent(theGamePlayLevelUI.transform, false);
 
         }
     }
+    public void UIObjectsUpdate()//根据游戏进度调整UI显示对象
+    {
+        if (theLevel.currentSceneName == "MainMenu")
+        {
+            if (!PlayerPrefs.HasKey("HasStartGame"))
+            {
+                //已经开始过游戏
+                //theStartButton.transform.position = theFirstStartPos.position;
+                //theContinueButton.SetActive(false);
+                //theStartButton.GetComponentInChildren<TextMeshProUGUI>().text = "New Game";
+                //theQuitButton.transform.position = theFirstQuitPos.position;
+            }
+            else
+            {
+                //还没有开始过游戏
+            }
+        }
+        else
+        {
+            //Gameplay时候更新对象
+        }
+    }
+    public void UIDisplayUpdate()//根据游戏进度更新UI显示内容
+    {
+
+    }
+
 
     public void TurnOnDialogCanvas()
     {
@@ -223,11 +170,6 @@ public class UIController : MonoBehaviour
         theDialogeUI.SetActive(false);
         isDialogue = false;
     }
-
-
-
-
-
     public void GamePlayPause()
     {
         thePauseUI.SetActive(true);
@@ -239,7 +181,7 @@ public class UIController : MonoBehaviour
     }
     #endregion
 
-    #region
+    #region 事件帧调用
     public void theStartFunction()
     {
         //PlayerPrefs.SetInt("AnimatonTransition", 1);
