@@ -7,7 +7,8 @@ public class UIController : MonoBehaviour
 {
     //public static UIController instance;
     private ControllerManager thisCM;
-    private PlayerController thePlayer;
+    //private PlayerController thePlayer;
+    private NewPlayerController thePlayer;
     private LevelController theLevel;
     private InputController theInput;
     private DialogeController theDC;//用于触发对话

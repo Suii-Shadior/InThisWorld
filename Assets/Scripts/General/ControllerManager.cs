@@ -3,8 +3,9 @@ using UnityEngine;
 public class ControllerManager : MonoBehaviour
 {
     public static ControllerManager instance;
-    public PlayerController thePlayer;
+    //public PlayerController thePlayer;
     //public LSPlayerController theLSPlayer;
+    public NewPlayerController thePlayer;
     public CameraController theCamera;
     public InputController theInput;
     public LevelController theLevel;

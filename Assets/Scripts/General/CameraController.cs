@@ -3,7 +3,8 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
-    private PlayerController thePlayer;
+    //private PlayerController thePlayer;
+    private NewPlayerController thePlayer;
     public Transform playerItself;
     public Transform horizontalMove;
     private CinemachineVirtualCamera thisCamera;
@@ -12,8 +13,8 @@ public class CameraController : MonoBehaviour
     private void Awake()
     {
         thisCamera = GetComponentInChildren<CinemachineVirtualCamera>();
+        //thePlayer = GetComponentInParent<ControllerManager>().thePlayer;
         thePlayer = GetComponentInParent<ControllerManager>().thePlayer;
-
     }
     void Start()
     {

@@ -11,7 +11,7 @@ public class PhysicsRelated : MonoBehaviour
     private bool isGround;
     public bool wasGround;
     public Transform theGroundCheckpoint;
-    public bool isWall;
+    private bool isWall;
     public bool wasWall;
     public Transform theWallCheckpoint;
     public bool isForward;
@@ -198,7 +198,11 @@ public class PhysicsRelated : MonoBehaviour
     {
         return isGround;
     }
-
+    public bool IsOnWall()
+    {
+        return isWall;
+    }
+    
 
     public void LeaveGround()
     {

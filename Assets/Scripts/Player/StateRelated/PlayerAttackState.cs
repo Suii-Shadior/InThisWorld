@@ -83,6 +83,6 @@ public class PlayerAttackState : PlayerState
         {
             player.attackCounter++;
         }
-        player.thisAC.AttackTrigger();
+        //player.thisAC.AttackTrigger();
     }
 }

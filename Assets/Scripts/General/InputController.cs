@@ -7,8 +7,8 @@ public class InputController : MonoBehaviour
 {
     private Input1 theInput;
     private ControllerManager thisCM;//所有Controller的集中管理对象 游戏内个对象可以通过这唯一实例获得各种controller
-    private PlayerController thePlayer;//Gameplay时玩家角色
-    //private LSPlayerController theLSPlayer;//LevelSelect时玩家角色
+    //private PlayerController thePlayer;
+    private NewPlayerController thePlayer;
     private LevelController theLevel;//管理关卡的
     private UIController theUI;
     private DialogeController theDC;
@@ -36,7 +36,7 @@ public class InputController : MonoBehaviour
     }
     void Start()
     {
-        if (theLevel.currentSceneName != "LevelSelect")
+        if (theLevel.currentSceneName != "MainMenu")
         {
             thePlayer = thisCM.thePlayer;//LevelSelect场景没这个所以在这里引入而非Awake，下GamePlay同理
             GamePlayInput();//用于切换ActionMap
@@ -44,26 +44,20 @@ public class InputController : MonoBehaviour
             theInput.Gameplay.Jump.started += ctx =>
             {
 
-                if (thePlayer.stateMachine.currentState == thePlayer.holdState || thePlayer.stateMachine.currentState == thePlayer.wallFallState || thePlayer.stateMachine.currentState == thePlayer.wallClimbState && (thePlayer.canAct && thePlayer.canWallJump))
-                {
-                    Debug.Log("蹬墙跳");
-                    thePlayer.stateMachine.ChangeState(thePlayer.walljumpState);
-                    return;
-                }
-                else
+                if (thePlayer.thisPR.IsOnGround())
                 {
                     if (thePlayer.canAct && thePlayer.canJump)
                     {
-                        if (thePlayer.stateMachine.currentState != thePlayer.dashState && thePlayer.stateMachine.currentState != thePlayer.holdState && thePlayer.stateMachine.currentState != thePlayer.wallFallState && thePlayer.stateMachine.currentState != thePlayer.wallClimbState)
-                        {               
-                            Debug.Log("普通跳");
-                            thePlayer.stateMachine.ChangeState(thePlayer.jumpState);
-                            return;
-                        }
-                        else thePlayer.JumpBufferCheck();
-                        //else Debug.Log("不准冲！");
-                    }
 
+                        //Debug.Log("普通跳");
+                        thePlayer.ChangeToJumpState();
+                        return;
+                    }
+                    else thePlayer.JumpBufferCheck();
+                }
+                else if(thePlayer.thisPR.IsOnWall())
+                {
+                    //Debug.Log("蹬墙跳");
                 }
             };
             theInput.Gameplay.Jump.canceled += ctx =>
@@ -99,6 +93,10 @@ public class InputController : MonoBehaviour
                     }
                 }
             };
+        }
+        else
+        {
+            //主菜单的Input
         }
     }
 

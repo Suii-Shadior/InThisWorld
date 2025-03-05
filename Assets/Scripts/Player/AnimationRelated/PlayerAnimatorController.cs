@@ -4,7 +4,8 @@ public class PlayerAnimatorController : MonoBehaviour
 {
     #region 组件
     private SpriteRenderer thisSR;
-    private PlayerController player;
+    //private PlayerController player;
+    private NewPlayerController player;
     public Animator thisAnim;
     #endregion
     #region 变量
@@ -18,7 +19,8 @@ public class PlayerAnimatorController : MonoBehaviour
     private void Awake()
     {
         thisSR = GetComponent<SpriteRenderer>();
-        player = GetComponentInParent<PlayerController>();
+        //player = GetComponentInParent<PlayerController>();
+        player = GetComponentInParent<NewPlayerController>();
         thisAnim = GetComponent<Animator>();
 
     }
@@ -29,7 +31,7 @@ public class PlayerAnimatorController : MonoBehaviour
     }
     void Update()//当前状态机下没有需要Update的内容
     {
-        thisAnim.SetFloat("velocityY", player.thisRB.velocity.y);
+        //thisAnim.SetFloat("velocityY", player.thisRB.velocity.y);
     }
 
 
@@ -39,15 +41,8 @@ public class PlayerAnimatorController : MonoBehaviour
     {
         thisAnim.SetFloat("velocityY", player.thisRB.velocity.y);
     }
-    public void DashTrigger()
-    {
 
-        thisAnim.SetBool("DashEnd", player.dashEnd);
-    }
-    public void AttackTrigger()//用于在攻击动作中更新下一个的动作
-    {
-        thisAnim.SetInteger("attackCounter", player.attackCounter);
-    }
+
     public void StopChipPlay()//用于在逻辑中停止当前动画的播放
     {
         thisAnim.speed = 0f;

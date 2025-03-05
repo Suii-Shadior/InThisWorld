@@ -463,12 +463,12 @@ public class PlayerController : MonoBehaviour
 
     public void WhetherCanHold()
     {
-        if (thisPR.isWall && stateMachine.currentState != dashState) canHold = true;
+        if (thisPR.IsOnWall() && stateMachine.currentState != dashState) canHold = true;
         else canHold = false;
     }
     public void WhetherCanWallFall()
     {
-        if (!thisPR.IsOnGround() && thisPR.isWall && thisRB.velocity.y <= 0.1 && stateMachine.currentState != dashState) canWallFall = true;
+        if (!thisPR.IsOnGround() && thisPR.IsOnWall() && thisRB.velocity.y <= 0.1 && stateMachine.currentState != dashState) canWallFall = true;
         else canWallFall = false;
     }
 
@@ -705,7 +705,7 @@ public class PlayerController : MonoBehaviour
                 stateMachine.ChangeState(idleState);
                 return;
             }
-            else if (thisPR.isWall)
+            else if (thisPR.IsOnWall())
             {
                 Debug.Log("ÅÐ¶ÏÁËµÄ");
                 WhetherHoldOrWallFall();
@@ -720,7 +720,7 @@ public class PlayerController : MonoBehaviour
     public void DashEnd()
     {
 
-        thisAC.DashTrigger();
+        //thisAC.DashTrigger();
         dashEnd = false;
         thisRB.velocity += new Vector2(dashEndDecrease * -thisRB.velocity.x, -thisRB.velocity.y);
         thisPR.GravityUnlock();

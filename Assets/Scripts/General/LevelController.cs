@@ -5,7 +5,8 @@ using UnityEngine.SceneManagement;
 public class LevelController : MonoBehaviour
 {
     private ControllerManager theCM;
-    private PlayerController thePlayer;
+    //private PlayerController thePlayer;
+    private NewPlayerController thePlayer;
     private UIController theUI;
     private DialogeController theDC;
     private AudioController theBGMPlayer;
@@ -68,7 +69,6 @@ public class LevelController : MonoBehaviour
         theEvents.PlayerResetPublish();
         thePlayer.gameObject.transform.position = resetPos.position;
         thePlayer.faceRight = resetFaceRight;
-        thePlayer.SkillFresh();
         thePlayer.ChangeToIdleState();
 
 
