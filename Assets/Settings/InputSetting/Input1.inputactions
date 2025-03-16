@@ -24,7 +24,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Dash",
+                    "name": "Exchange",
                     "type": "Button",
                     "id": "5def5f83-c9d8-4c48-b0b7-447e6f29f9bc",
                     "expectedControlType": "",
@@ -33,7 +33,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Grab",
+                    "name": "Attack",
                     "type": "Button",
                     "id": "d821c5a6-35aa-464c-be50-abf1cbf487cc",
                     "expectedControlType": "",
@@ -45,6 +45,15 @@
                     "name": "Pause",
                     "type": "Button",
                     "id": "55edd75c-fd3a-4eb3-8c45-b41dd10e2cb4",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Interact",
+                    "type": "Button",
+                    "id": "d3e9003f-8e24-4629-a170-efbcdfa92e84",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -180,7 +189,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";KeyBoard",
-                    "action": "Dash",
+                    "action": "Exchange",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -191,7 +200,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";KeyBoard",
-                    "action": "Grab",
+                    "action": "Attack",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -203,6 +212,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Pause",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "27b27119-cf22-4c06-8775-6ca8e0c23cd6",
+                    "path": "<Keyboard>/s",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Interact",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

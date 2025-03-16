@@ -41,7 +41,10 @@ public class PlayerAnimatorController : MonoBehaviour
     {
         thisAnim.SetFloat("velocityY", player.thisRB.velocity.y);
     }
-
+    public void SetAttackCounter()
+    {
+        thisAnim.SetInteger("attackSignal", player.attackCounter);
+    }
 
     public void StopChipPlay()//用于在逻辑中停止当前动画的播放
     {

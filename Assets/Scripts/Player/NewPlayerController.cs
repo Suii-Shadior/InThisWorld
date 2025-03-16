@@ -15,6 +15,10 @@ public class NewPlayerController : MonoBehaviour
     [HideInInspector] public PlayerFXController thisFX;
     [HideInInspector] public CharacterRelated thisCR;
     [SerializeField] private ControllerManager theCM;
+
+
+    public ActionStat actionStats;
+
     private LevelController theLevel;
     private DialogeController theDC;
     private InputController theInput;
@@ -22,11 +26,13 @@ public class NewPlayerController : MonoBehaviour
 
     #endregion
     #region 状态机相关
-    private NewPlayerStateMachine stateMachine;
-    private NewPlayerIdleState idleState;
-    private NewPlayerRunState runState;
-    private NewPlayerRiseState jumpState;
-    private NewPlayerFallState fallState;
+    public NewPlayerStateMachine stateMachine { get; private set; }
+    public NewPlayerIdleState idleState { get; private set; }
+    public NewPlayerRunState runState { get; private set; }
+    public NewPlayerRiseState jumpState { get; private set; }
+    public NewPlayerFallState fallState { get; private set; }
+    public NewPlayerAttackState attackState { get; private set; }
+    //public NewPlayerApexState apexState { get; private set; }
 
     #endregion
     #region 变量
@@ -88,17 +94,33 @@ public class NewPlayerController : MonoBehaviour
 
 
     [Header("空中")]
-    public float airmoveSpeed;
+    private bool isFastFalling;
+    private float fastFallTime;
+    private float fastfallReleaseSpeed;
+
+
+
+    public float apexCounter;
+    public float apexDuration;
+    public float apexThresholdLength;
+    public float holdingCounter;
+    public bool isPastApexThreshold;
+
+    public float airmoveAccleration;
     public float airmoveSpeedMax;
     public float airmoveThresholdSpeed;
     public float airFallSpeedMax;
 
+
     [Header("跳跃")]
     public float jumpForce;
     public float peakSpeed;
-    public float canJumpCounter;
-    public float canJumpLength;
-    private float jumpBufferLength;
+
+    public bool releaseDuringRising;//当false时，意味着玩家在跳跃上升且按住了跳跃键；当ture时，意味着玩家并没有跳跃，或者跳跃已经下降了、或者在上升过程中松开了跳跃键
+    private float coyoteJumpCounter; //coyote
+    public float coyoteJumpLength;
+    public float jumpBufferLength;
+
 
     [Header("雨伞")]
     public float umbrellaMoveSpeed;
@@ -130,6 +152,11 @@ public class NewPlayerController : MonoBehaviour
 
     [Header("死亡与复活")]
     public float sitCounter;
+
+
+
+    [Header("交互相关")]
+    public IInteract theInteractable;
     #endregion
 
 
@@ -150,6 +177,8 @@ public class NewPlayerController : MonoBehaviour
         runState = new NewPlayerRunState(this, stateMachine, "isHorizontalMoving");
         jumpState = new NewPlayerRiseState(this, stateMachine, "isJumping");
         fallState = new NewPlayerFallState(this, stateMachine, "isFalling");
+        attackState =new NewPlayerAttackState(this, stateMachine, "isAttacking");
+        //apexState = new NewPlayerApexState(this, stateMachine, "isFalling");
         theLevel = theCM.theLevel;
         theDC = theCM.theDC;
         theInput = theCM.theInput;
@@ -159,11 +188,28 @@ public class NewPlayerController : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
+        MovementVecUpdate();
+        if (isGameplay)
+        {
+            thisPR.PRUpdate();
+            GameplayCount();
+            GameplayCooldownCount();
+            CanActCount();
+
+        }
     }
 
     private void FixedUpdate()
     {
-        MovementVecUpdate();
+        if (isGameplay)
+        {
+            thisPR.PRFixUpdate();
+            PR_GravityRelatedUpdate();
+            stateMachine.currentState.Update();
+            TurnAround();
+            FaceDirUpdate();
+        }
+
     }
 
     private void OriginPlayerData()
@@ -178,12 +224,76 @@ public class NewPlayerController : MonoBehaviour
     }
 
 
+    public void Unact(float _unactDuration)
+    {
+        canAct = false;
+        canActCounter = _unactDuration;
+    }
+    #region 触发器检测
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.GetComponent<PlatformController>())
+        {
+            PlatformController thePlatform= other.GetComponent<PlatformController>();
+            if (thePlatform.GetPlayer() == null && thePlatform.GetComCol() == thisPR.theRaycastCol.collider)
+            {
+                Debug.Log("进入");
+                
 
+                thePlatform.SetPlayer(this);
+                thePlatform.Interactive_Sensor();
+                //this.transform.parent = other.transform;
+            }
+
+        }
+        else { Debug.Log("？？？"); }
+    }
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        if (other.GetComponent<PlatformController>())
+        {
+            PlatformController thePlatform = other.GetComponent<PlatformController>();
+            if (thePlatform.GetPlayer() == this)
+            {
+                Debug.Log("退出");
+                thePlatform.SetPlayer(null);
+                //this.transform.parent=null;
+            }
+        }
+    }
+    #endregion
+
+    public virtual void CanActCount()
+    {
+        if (canActCounter > 0 && !canAct)
+        {
+            canActCounter -= Time.deltaTime;
+        }
+        else
+        {
+            if (!theDC.isDialogue)
+                canAct = true;
+        }
+    }
+
+    private void TurnAround()
+    {
+        if (canTurnAround && needTurnAround)
+        {
+            Debug.Log("转身");
+            faceRight = !faceRight;
+            needTurnAround = false;
+        }
+    }
     #region 改变状态的代码
     public void StateOver()
     {
         if (thisPR.IsOnGround()) ChangeToIdleState();
         else stateMachine.ChangeState(fallState);
+    }
+    public NewPlayerState CurrentState()
+    {
+        return stateMachine.currentState;
     }
     public void ChangeToIdleState()
     {
@@ -193,10 +303,13 @@ public class NewPlayerController : MonoBehaviour
 
     public void ChangeToHorizontalMoving()
     {
-        Debug.Log("这里?");
         stateMachine.ChangeState(runState);
     }
 
+    //public void ChangeToApexState()
+    //{
+    //    stateMachine.ChangeState(apexState);
+    //}
     public void ChangeToFallState()
     {
         stateMachine.ChangeState(fallState);
@@ -205,6 +318,10 @@ public class NewPlayerController : MonoBehaviour
     {
         stateMachine.ChangeState(jumpState);
 
+    }
+    public void ChangeToAttackState()
+    {
+        stateMachine.ChangeState(attackState);
     }
     //public void ChangeToUmbrellaState()
     //{
@@ -231,9 +348,9 @@ public class NewPlayerController : MonoBehaviour
 
     #region Gameplay方法
     #region Can判断
-    public void WhetherCanJumpOrWallJump()//因为共用跳跃键，互斥，所以在一个判断
+    public void WhetherCanJumpOrWallJump()//因为普通跳和蹬墙跳共用跳跃键，互斥，所以在一个判断
     {
-        if (canJumpCounter > 0f)
+        if (coyoteJumpCounter > 0f)
         {
 
             if (!thisPR.IsOnGround())
@@ -248,13 +365,14 @@ public class NewPlayerController : MonoBehaviour
                     canJump = true;
                     canWallJump = false;
                 }
+                coyoteJumpCounter -= Time.deltaTime;
+                //Debug.Log(coyoteJumpCounter);
             }
             else
             {
                 canJump = true;
                 canWallJump = false;
             }
-            canJumpCounter -= Time.deltaTime;
         }
         else
         {
@@ -266,9 +384,14 @@ public class NewPlayerController : MonoBehaviour
 
     }
 
+    public void CoyoteCounterZero()
+    {
+        coyoteJumpCounter = 0f;
+    }
+
     public void WhetherCanAttack()
     {
-        if (attackCooldownCounter<0)
+        if (attackCooldownCounter<=0)
         {
             canAttack = true;
         }
@@ -281,7 +404,7 @@ public class NewPlayerController : MonoBehaviour
 
     public void RefreshCanJump()
     {
-        canJumpCounter = canJumpLength;
+        coyoteJumpCounter = coyoteJumpLength;
     }
 
     #endregion 
@@ -313,7 +436,7 @@ public class NewPlayerController : MonoBehaviour
 
     public void JumpBufferCheck()
     {
-        StartCoroutine(JumpBufferCheckCo(jumpBufferLength));
+       Coroutine jumpBuffer=  StartCoroutine(JumpBufferCheckCo(jumpBufferLength));
     }
     private IEnumerator JumpBufferCheckCo(float counter)
     {
@@ -322,27 +445,18 @@ public class NewPlayerController : MonoBehaviour
             //Debug.Log("开始检测缓存");
             if (canJump)
             {
-                //if (stateMachine.currentState == holdState || stateMachine.currentState == wallfallState) stateMachine.ChangeState(walljumpState);
-                //else 
-                ChangeToJumpState();
-                //Debug.Log("缓存跳跃成功");
-                break;
+                
+                    Debug.Log("缓存跳跃成功");
+                    ChangeToJumpState();
+                    break;//这里没有用return，而是用Break跳出这段循环；
             }
+            counter -= Time.deltaTime;
             yield return new WaitForSeconds(Time.deltaTime);
-            //counter -= Time.deltaTime;
         }
         //if(counter<=0) Debug.Log("结束检测缓存");
     }
-    public void Fall()
-    {
+    
 
-        if (thisRB.velocity.y < -verticalFallSpeedMax)
-        {
-            thisRB.velocity += new Vector2(0, -verticalFallSpeedMax - thisRB.velocity.y);
-            //Debug.Log(thisRB.velocity.y);
-        }
-
-    }
 
 
 
@@ -383,7 +497,10 @@ public class NewPlayerController : MonoBehaviour
         thisRB.velocity += new Vector2(-thisRB.velocity.x, 0);
 
     }
-
+    public void HalfYVelocity()
+    {
+        thisRB.velocity += new Vector2(0, -thisRB.velocity.y / 2);
+    }
     public void GroundVelocityLimit()//用于限制玩家移动速度上限
     {
         if (Mathf.Abs(thisRB.velocity.x) > horizontalMoveSpeedMax)
@@ -407,16 +524,35 @@ public class NewPlayerController : MonoBehaviour
     #endregion
     #region PR相关方法
 
-    public void IsPeak()//用来判断空中Player所在的位置，帮助PR在空中实现重力的调整
+
+    public void PR_GravityRelatedUpdate()//用来判断空中Player所在的位置，帮助PR在空中实现重力的调整。但是这个方法写的明显有问题
     {
-        if (Mathf.Abs(thisRB.velocity.y) < peakSpeed)
+        if (thisPR.IsOnGround())
         {
-            //Debug.Log("我在飞！");
-            thisPR.isPeak = true;
+            thisPR.isRising = false;
+            thisPR.isFalling = false;
+            thisPR.isPeak = false;
         }
         else
         {
-            thisPR.isPeak = false;
+            if (thisRB.velocity.y > peakSpeed)
+            {
+                thisPR.isRising = true;
+                thisPR.isFalling = false;
+                thisPR.isPeak = false;
+            }
+            else if (thisRB.velocity.y < -peakSpeed)
+            {
+                thisPR.isRising = false;
+                thisPR.isFalling = true;
+                thisPR.isPeak = false;
+            }
+            else
+            {
+                thisPR.isRising = false;
+                thisPR.isFalling = false;
+                thisPR.isPeak = true;
+            }
         }
     }
 
@@ -434,18 +570,23 @@ public class NewPlayerController : MonoBehaviour
         {
             isUncontrol = false;
         }
-        if (continueAttackCounter > 0)
-        {
-            continueAttackCounter -= Time.deltaTime;
-        }
 
-        if (attackCooldownCounter > 0)
+        if (attackCooldownCounter >= 0)
         {
             attackCooldownCounter -= Time.deltaTime;
         }
         else
         {
-            canAttack = false;
+            canAttack = true;
+        }
+    }
+
+
+    private void GameplayCount()
+    {
+        if (continueAttackCounter > 0&&stateMachine.currentState !=attackState)
+        {
+            continueAttackCounter -= Time.deltaTime;
         }
     }
 
@@ -467,12 +608,36 @@ public class NewPlayerController : MonoBehaviour
     #endregion
 
 
-
+    #region Input相关方法
     private void MovementVecUpdate()
     {
-        horizontalInputVec = theCM.theInput.horizontalInputVec;
+        if (thisPR.IsOnGround())
+        {
+            if (theCM.theInput.horizontalInputVec == faceDir && thisPR.IsOnWall())
+            {
+                horizontalInputVec = 0;
+            }
+            else
+            {
+                horizontalInputVec = theInput.horizontalInputVec;
+            }
+        }
+        else
+        {
+            if (theCM.theInput.horizontalInputVec == faceDir && (thisPR.IsOnWall()||thisPR.IsForwad()))
+            {
+                horizontalInputVec = 0;
+            }
+            else
+            {
+                horizontalInputVec = theInput.horizontalInputVec;
+            }
+        }
         verticalInputVec = theCM.theInput.verticalInputVec;
     }
+
+
+    #endregion
 
 }
 

@@ -247,6 +247,7 @@ public class PlayerController : MonoBehaviour
         if (isGameplay)
         {
             GameplayCooldownCount();
+            GameplayCount();
             CanActCount();
             
         }
@@ -315,8 +316,15 @@ public class PlayerController : MonoBehaviour
 
     private void MovementVecUpdate()
     {
-        horizontalInputVec = theCM.theInput.horizontalInputVec;
-        verticalInputVec = theCM.theInput.verticalInputVec;
+        if (theCM.theInput.horizontalInputVec == faceDir && thisPR.IsOnWall())
+        {
+            horizontalInputVec = 0;
+        }
+        else
+        {
+            horizontalInputVec = theInput.horizontalInputVec;
+        }
+        verticalInputVec = theInput.verticalInputVec;
     }
 
     public void SkillFresh()//强制刷新所有技能
@@ -1077,6 +1085,15 @@ public class PlayerController : MonoBehaviour
         if (invinsibleCounter > 0)
         {
             invinsibleCounter -= Time.deltaTime;
+        }
+    }
+
+
+    private void GameplayCount()
+    {
+        if (continueAttackCounter > 0)
+        {
+            continueAttackCounter -= Time.deltaTime;
         }
     }
 

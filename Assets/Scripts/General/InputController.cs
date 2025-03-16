@@ -2,6 +2,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.XR;
+using UnityEngine.Windows;
 
 public class InputController : MonoBehaviour
 {
@@ -14,7 +15,14 @@ public class InputController : MonoBehaviour
     private DialogeController theDC;
 
     public int horizontalInputVec => (theInput.Gameplay.Movement.ReadValue<Vector2>().x != 0) ? ((theInput.Gameplay.Movement.ReadValue<Vector2>().x > 0) ? 1 : -1) : 0;
-    public int verticalInputVec => (theInput.Gameplay.Movement.ReadValue<Vector2>().y != 0) ? ((theInput.Gameplay.Movement.ReadValue<Vector2>().y > 0) ? ((thePlayer.canWallClimbForward) ? 1 : 0) : -1) : 0;
+    public int verticalInputVec => (theInput.Gameplay.Movement.ReadValue<Vector2>().y != 0) ? ((theInput.Gameplay.Movement.ReadValue<Vector2>().y > 0) ? 1 : -1) : 0;
+
+    public bool jumpWasPressed;//=>theInput.Gameplay.Jump.WasPressedThisFrame();
+    public bool jumpIsHeld;//=>theInput.Gameplay.Jump.IsPressed();
+    public bool jumpWasReleased;//=>theInput.Gameplay.Jump.WasReleasedThisFrame();
+
+
+
 
 
 
@@ -22,6 +30,7 @@ public class InputController : MonoBehaviour
     {
         thisCM = GetComponentInParent<ControllerManager>();
         theInput = new Input1();
+        thePlayer = thisCM.thePlayer;//Tip;根据场景不同可能不能放在这
         theLevel = thisCM.theLevel;
         theUI = thisCM.theUI;
         theDC = thisCM.theDC;
@@ -38,39 +47,101 @@ public class InputController : MonoBehaviour
     {
         if (theLevel.currentSceneName != "MainMenu")
         {
-            thePlayer = thisCM.thePlayer;//LevelSelect场景没这个所以在这里引入而非Awake，下GamePlay同理
-            GamePlayInput();//用于切换ActionMap
+            
+            GamePlayInput();//Gameplay输入
             //以下均是注册内容
             theInput.Gameplay.Jump.started += ctx =>
             {
-
-                if (thePlayer.thisPR.IsOnGround())
+                if (thePlayer.canAct)
                 {
-                    if (thePlayer.canAct && thePlayer.canJump)
+                    if(thePlayer.canJump)
                     {
-
                         //Debug.Log("普通跳");
                         thePlayer.ChangeToJumpState();
                         return;
+                    }else if (thePlayer.canWallJump)
+                    {
+                        //Debug.Logs("蹬墙跳）;
                     }
                     else thePlayer.JumpBufferCheck();
-                }
-                else if(thePlayer.thisPR.IsOnWall())
-                {
-                    //Debug.Log("蹬墙跳");
+
                 }
             };
+
             theInput.Gameplay.Jump.canceled += ctx =>
             {
                 //玩家停止跳跃
+
+                if (thePlayer.CurrentState() == thePlayer.jumpState)
+                {
+                    //if (thePlayer.isPastApexThreshold)
+                    //{
+                    //    转到Apex状态
+                    //}
+                    //else
+                    //{
+                    //    转到Fall状态
+                    //}
+                    //Debug.Log("不再上升");
+                    thePlayer.HalfYVelocity();
+                }
+                
             };
-            theInput.Gameplay.Dash.started += ctx =>
+
+
+            theInput.Gameplay.Exchange.started += ctx =>
             {
                 //玩家冲刺
             };
-            theInput.Gameplay.Grab.started += ctx =>
+            theInput.Gameplay.Attack.started += ctx =>
             {
-                //玩家抓住墙壁
+                if (thePlayer.canAct&&thePlayer.canAttack)
+                {
+                    if(theInput.Gameplay.Movement.ReadValue<Vector2>().y > 0)
+                    {
+                        thePlayer.attackCounter = 4;
+                    }
+                    else if (theInput.Gameplay.Movement.ReadValue<Vector2>().y < 0)
+                    {
+                        //if (!thePlayer.thisPR.IsOnGround())
+                        //{
+                        //    thePlayer.attackCounter = 3;
+                        //}
+                        //else
+                        //{
+                        //    if (thePlayer.continueAttackCounter > 0 && thePlayer.attackCounter == 1)
+                        //    {
+                        //        thePlayer.attackCounter = 2;
+                        //    }
+                        //    else
+                        //    {
+                        //        thePlayer.attackCounter = 1;
+
+                        //    }
+                        //}
+                        thePlayer.attackCounter = 3;
+                    }
+                    else
+                    {
+                        if (thePlayer.continueAttackCounter > 0&&thePlayer.attackCounter==1)
+                        {
+                            thePlayer.attackCounter = 2;
+                        }
+                        else
+                        {
+                            thePlayer.attackCounter = 1;
+                        }
+                    }
+                    thePlayer.ChangeToAttackState();
+
+                }
+            };
+            theInput.Gameplay.Interact.started += ctx =>
+            {
+                if (thePlayer.theInteractable != null)
+                {
+                    thePlayer.theInteractable.Interact();
+                }
             };
             theInput.Gameplay.Pause.started += ctx =>
             {
@@ -100,6 +171,19 @@ public class InputController : MonoBehaviour
         }
     }
 
+
+    private void Update()
+    {
+        
+        //if (!thePlayer.releaseDuringRising && theInput.Gameplay.Jump.IsPressed())
+        //{
+        //    thePlayer.holdingCounter += Time.deltaTime;
+        //    if (thePlayer.holdingCounter > thePlayer.apexThresholdLength)
+        //    thePlayer.isPastApexThreshold = true;
+
+        //}
+
+    }
 
     public void GamePlayInput()
     {
@@ -132,6 +216,19 @@ public class InputController : MonoBehaviour
 
     public bool WhetherZPressing()
     {
-        return theInput.Gameplay.Grab.ReadValue<float>() > .5f;
+        return theInput.Gameplay.Attack.ReadValue<float>() > .5f;
     }
+    public bool WhetherXPressing()
+    {
+        return theInput.Gameplay.Exchange.ReadValue<float>() > .5f;
+    }
+    public bool WhetherCPressing()
+    {
+        return theInput.Gameplay.Jump.ReadValue<float>() > .5f;
+    }
+    public bool WhetherSPressing()
+    {
+        return theInput.Gameplay.Interact.ReadValue<float>() > .5f;
+    }
+
 }

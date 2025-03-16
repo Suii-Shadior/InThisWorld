@@ -46,7 +46,7 @@ public partial class @Input1: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""Dash"",
+                    ""name"": ""Exchange"",
                     ""type"": ""Button"",
                     ""id"": ""5def5f83-c9d8-4c48-b0b7-447e6f29f9bc"",
                     ""expectedControlType"": """",
@@ -55,7 +55,7 @@ public partial class @Input1: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""Grab"",
+                    ""name"": ""Attack"",
                     ""type"": ""Button"",
                     ""id"": ""d821c5a6-35aa-464c-be50-abf1cbf487cc"",
                     ""expectedControlType"": """",
@@ -67,6 +67,15 @@ public partial class @Input1: IInputActionCollection2, IDisposable
                     ""name"": ""Pause"",
                     ""type"": ""Button"",
                     ""id"": ""55edd75c-fd3a-4eb3-8c45-b41dd10e2cb4"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Interact"",
+                    ""type"": ""Button"",
+                    ""id"": ""d3e9003f-8e24-4629-a170-efbcdfa92e84"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
@@ -202,7 +211,7 @@ public partial class @Input1: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";KeyBoard"",
-                    ""action"": ""Dash"",
+                    ""action"": ""Exchange"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -213,7 +222,7 @@ public partial class @Input1: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";KeyBoard"",
-                    ""action"": ""Grab"",
+                    ""action"": ""Attack"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -225,6 +234,17 @@ public partial class @Input1: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Pause"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""27b27119-cf22-4c06-8775-6ca8e0c23cd6"",
+                    ""path"": ""<Keyboard>/s"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Interact"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -277,9 +297,10 @@ public partial class @Input1: IInputActionCollection2, IDisposable
         m_Gameplay = asset.FindActionMap("Gameplay", throwIfNotFound: true);
         m_Gameplay_Movement = m_Gameplay.FindAction("Movement", throwIfNotFound: true);
         m_Gameplay_Jump = m_Gameplay.FindAction("Jump", throwIfNotFound: true);
-        m_Gameplay_Dash = m_Gameplay.FindAction("Dash", throwIfNotFound: true);
-        m_Gameplay_Grab = m_Gameplay.FindAction("Grab", throwIfNotFound: true);
+        m_Gameplay_Exchange = m_Gameplay.FindAction("Exchange", throwIfNotFound: true);
+        m_Gameplay_Attack = m_Gameplay.FindAction("Attack", throwIfNotFound: true);
         m_Gameplay_Pause = m_Gameplay.FindAction("Pause", throwIfNotFound: true);
+        m_Gameplay_Interact = m_Gameplay.FindAction("Interact", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Newaction = m_UI.FindAction("New action", throwIfNotFound: true);
@@ -352,18 +373,20 @@ public partial class @Input1: IInputActionCollection2, IDisposable
     private List<IGameplayActions> m_GameplayActionsCallbackInterfaces = new List<IGameplayActions>();
     private readonly InputAction m_Gameplay_Movement;
     private readonly InputAction m_Gameplay_Jump;
-    private readonly InputAction m_Gameplay_Dash;
-    private readonly InputAction m_Gameplay_Grab;
+    private readonly InputAction m_Gameplay_Exchange;
+    private readonly InputAction m_Gameplay_Attack;
     private readonly InputAction m_Gameplay_Pause;
+    private readonly InputAction m_Gameplay_Interact;
     public struct GameplayActions
     {
         private @Input1 m_Wrapper;
         public GameplayActions(@Input1 wrapper) { m_Wrapper = wrapper; }
         public InputAction @Movement => m_Wrapper.m_Gameplay_Movement;
         public InputAction @Jump => m_Wrapper.m_Gameplay_Jump;
-        public InputAction @Dash => m_Wrapper.m_Gameplay_Dash;
-        public InputAction @Grab => m_Wrapper.m_Gameplay_Grab;
+        public InputAction @Exchange => m_Wrapper.m_Gameplay_Exchange;
+        public InputAction @Attack => m_Wrapper.m_Gameplay_Attack;
         public InputAction @Pause => m_Wrapper.m_Gameplay_Pause;
+        public InputAction @Interact => m_Wrapper.m_Gameplay_Interact;
         public InputActionMap Get() { return m_Wrapper.m_Gameplay; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -379,15 +402,18 @@ public partial class @Input1: IInputActionCollection2, IDisposable
             @Jump.started += instance.OnJump;
             @Jump.performed += instance.OnJump;
             @Jump.canceled += instance.OnJump;
-            @Dash.started += instance.OnDash;
-            @Dash.performed += instance.OnDash;
-            @Dash.canceled += instance.OnDash;
-            @Grab.started += instance.OnGrab;
-            @Grab.performed += instance.OnGrab;
-            @Grab.canceled += instance.OnGrab;
+            @Exchange.started += instance.OnExchange;
+            @Exchange.performed += instance.OnExchange;
+            @Exchange.canceled += instance.OnExchange;
+            @Attack.started += instance.OnAttack;
+            @Attack.performed += instance.OnAttack;
+            @Attack.canceled += instance.OnAttack;
             @Pause.started += instance.OnPause;
             @Pause.performed += instance.OnPause;
             @Pause.canceled += instance.OnPause;
+            @Interact.started += instance.OnInteract;
+            @Interact.performed += instance.OnInteract;
+            @Interact.canceled += instance.OnInteract;
         }
 
         private void UnregisterCallbacks(IGameplayActions instance)
@@ -398,15 +424,18 @@ public partial class @Input1: IInputActionCollection2, IDisposable
             @Jump.started -= instance.OnJump;
             @Jump.performed -= instance.OnJump;
             @Jump.canceled -= instance.OnJump;
-            @Dash.started -= instance.OnDash;
-            @Dash.performed -= instance.OnDash;
-            @Dash.canceled -= instance.OnDash;
-            @Grab.started -= instance.OnGrab;
-            @Grab.performed -= instance.OnGrab;
-            @Grab.canceled -= instance.OnGrab;
+            @Exchange.started -= instance.OnExchange;
+            @Exchange.performed -= instance.OnExchange;
+            @Exchange.canceled -= instance.OnExchange;
+            @Attack.started -= instance.OnAttack;
+            @Attack.performed -= instance.OnAttack;
+            @Attack.canceled -= instance.OnAttack;
             @Pause.started -= instance.OnPause;
             @Pause.performed -= instance.OnPause;
             @Pause.canceled -= instance.OnPause;
+            @Interact.started -= instance.OnInteract;
+            @Interact.performed -= instance.OnInteract;
+            @Interact.canceled -= instance.OnInteract;
         }
 
         public void RemoveCallbacks(IGameplayActions instance)
@@ -483,9 +512,10 @@ public partial class @Input1: IInputActionCollection2, IDisposable
     {
         void OnMovement(InputAction.CallbackContext context);
         void OnJump(InputAction.CallbackContext context);
-        void OnDash(InputAction.CallbackContext context);
-        void OnGrab(InputAction.CallbackContext context);
+        void OnExchange(InputAction.CallbackContext context);
+        void OnAttack(InputAction.CallbackContext context);
         void OnPause(InputAction.CallbackContext context);
+        void OnInteract(InputAction.CallbackContext context);
     }
     public interface IUIActions
     {

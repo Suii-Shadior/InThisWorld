@@ -2424,7 +2424,8 @@
             <summary>Log only warnings and errors</summary>
         </member>
         <member name="F:DG.Tweening.LogBehaviour.Verbose">
-            <summary>Log warnings, errors and additional infos</summary>
+            <summary>Log warnings, errors and additional 
+			s</summary>
         </member>
         <member name="F:DG.Tweening.LogBehaviour.ErrorsOnly">
             <summary>Log only errors</summary>
