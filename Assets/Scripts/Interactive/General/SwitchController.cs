@@ -16,11 +16,11 @@ public class SwitchController : MonoBehaviour,IInteract
     [Header("Swtich Setting")]
     public SwitchTpye thisSwitchType;
     public bool isPrimarySwitch;//通过此项来判断用于初始化的对象范围，避免重复及冲突
-    public float canInteractedDuration;
+    public float canTriggeredDuration;
     [Header("Switch Info")]
     public bool isTriggered;
-    public bool canInteracted;
-    private float canInteractedCounter;
+    public bool canTriggered;
+    private float canTriggeredCounter;
     [Header("Combine Related")]
     public PlatformController[] triggeredPlatforms;
     public PlatformController[] unTriggeredPlatforms;
@@ -115,15 +115,15 @@ public class SwitchController : MonoBehaviour,IInteract
     #region Update相关
     private void SwitchablePlatform_PairUpdate()
     {
-        if (!canInteracted)
+        if (!canTriggered)
         {
-            if (canInteractedCounter>0)
+            if (canTriggeredCounter>0)
             {
-                canInteractedCounter -= Time.deltaTime;
+                canTriggeredCounter -= Time.deltaTime;
             }
             else
             {
-                canInteracted = true;
+                canTriggered = true;
             }
 
         }
@@ -168,7 +168,7 @@ public class SwitchController : MonoBehaviour,IInteract
     }
     private void SwitchablePlatform_PairInteract()
     {
-        if (canInteracted)
+        if (canTriggered)
         {
             if (isTriggered)
             {
@@ -229,8 +229,8 @@ public class SwitchController : MonoBehaviour,IInteract
             isTriggered = true;
             thisAnim.SetTrigger(TRIGGERINGSTR);
         }
-        canInteracted = false;
-        canInteractedCounter = canInteractedDuration;
+        canTriggered = false;
+        canTriggeredCounter = canTriggeredDuration;
     }
     #endregion
 

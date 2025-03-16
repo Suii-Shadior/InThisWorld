@@ -5091,7 +5091,7 @@ MonoBehaviour:
   airmoveAccleration: 0.5
   airmoveSpeedMax: 6
   airmoveThresholdSpeed: 4
-  airFallSpeedMax: 16
+  airFallSpeedMax: 13
   jumpForce: 50
   peakSpeed: 1
   releaseDuringRising: 0
@@ -5148,7 +5148,7 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0.4}
-  m_Size: {x: 0.4, y: 0.8}
+  m_Size: {x: 0.4, y: 0.84}
   m_Direction: 0
 --- !u!114 &605967250435627947
 MonoBehaviour:
@@ -5174,11 +5174,11 @@ MonoBehaviour:
   isRaycastGround: 0
   wasRaycastGround: 0
   footCheckPointOffset: 0.05
-  raycastLength: 0.1
+  raycastLength: 0.2
   theGround:
     serializedVersion: 2
     m_Bits: 256
-  theGroundCheckRadius: 0.1
+  theGroundCheckRadius: 0.2
   theWallCheckRadius: 0.1
   theForwardCheckRadius: 0.1
   theBackWallCheckRadius: 0.1
@@ -5197,8 +5197,8 @@ MonoBehaviour:
   peakGravity: 2
   riseGravity: 2
   risegravityMultiplier: 0.04
-  fallGravity: 3
-  fallGravityMultiplier: 0.2
+  fallGravity: 3.5
+  fallGravityMultiplier: 0.18
   normalDrag: 0
   airDrag: 1
   hasGround: 0
@@ -5299,6 +5299,7 @@ GameObject:
   - component: {fileID: 8693764605779994161}
   - component: {fileID: 6981309468104699280}
   - component: {fileID: 7399475868300983365}
+  - component: {fileID: 7655697152929322829}
   m_Layer: 0
   m_Name: NormalSlash
   m_TagString: Untagged
@@ -5425,6 +5426,22 @@ PolygonCollider2D:
       - {x: 0.6376225, y: 0.35958123}
       - {x: -1.0539765, y: 0.7523894}
   m_UseDelaunayMesh: 0
+--- !u!114 &7655697152929322829
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2699552529057926691}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b86fdb7fa02bb094eb94b3ca95923e8c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  thePlayer: {fileID: 8631284125097232791}
+  theAttackItself: {fileID: 0}
+  AttackDir: 0
+  AttackVec: {x: 0, y: 0}
 --- !u!1 &3047950930419638148
 GameObject:
   m_ObjectHideFlags: 0
@@ -10652,6 +10669,7 @@ GameObject:
   - component: {fileID: 4625153685218741068}
   - component: {fileID: 2983415083016020449}
   - component: {fileID: 4182395009878032034}
+  - component: {fileID: 7854132651282367867}
   m_Layer: 0
   m_Name: DownSlash
   m_TagString: Untagged
@@ -10777,6 +10795,22 @@ PolygonCollider2D:
       - {x: -1.1588744, y: 0.89498365}
       - {x: -1.1364231, y: -0.556586}
   m_UseDelaunayMesh: 0
+--- !u!114 &7854132651282367867
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6951807113573096671}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b86fdb7fa02bb094eb94b3ca95923e8c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  thePlayer: {fileID: 8631284125097232791}
+  theAttackItself: {fileID: 0}
+  AttackDir: 0
+  AttackVec: {x: 0, y: 0}
 --- !u!1 &7049439640727271432
 GameObject:
   m_ObjectHideFlags: 0
@@ -15805,6 +15839,7 @@ GameObject:
   - component: {fileID: 450924891579433905}
   - component: {fileID: 8286676846750377686}
   - component: {fileID: 4844848635812174698}
+  - component: {fileID: 7103194531630503658}
   m_Layer: 0
   m_Name: AltSlash
   m_TagString: Untagged
@@ -15931,6 +15966,22 @@ PolygonCollider2D:
       - {x: 0.43032655, y: 0.6203867}
       - {x: -0.9558895, y: 0.67119086}
   m_UseDelaunayMesh: 0
+--- !u!114 &7103194531630503658
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8031140869755001499}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b86fdb7fa02bb094eb94b3ca95923e8c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  thePlayer: {fileID: 8631284125097232791}
+  theAttackItself: {fileID: 0}
+  AttackDir: 0
+  AttackVec: {x: 0, y: 0}
 --- !u!1 &8036769224825037097
 GameObject:
   m_ObjectHideFlags: 0
@@ -16098,6 +16149,7 @@ GameObject:
   - component: {fileID: 4898866302868170841}
   - component: {fileID: 3245164991135467416}
   - component: {fileID: 3249371498748772656}
+  - component: {fileID: 8927462470401045899}
   m_Layer: 0
   m_Name: UpSlash
   m_TagString: Untagged
@@ -16224,6 +16276,22 @@ PolygonCollider2D:
       - {x: 0.14765704, y: 1.170939}
       - {x: -0.49168953, y: 1.1223336}
   m_UseDelaunayMesh: 0
+--- !u!114 &8927462470401045899
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8413904838681040313}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b86fdb7fa02bb094eb94b3ca95923e8c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  thePlayer: {fileID: 8631284125097232791}
+  theAttackItself: {fileID: 0}
+  AttackDir: 0
+  AttackVec: {x: 0, y: 0}
 --- !u!1 &8452885689897635636
 GameObject:
   m_ObjectHideFlags: 0

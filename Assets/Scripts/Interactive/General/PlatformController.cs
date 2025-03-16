@@ -348,6 +348,7 @@ public class PlatformController : MonoBehaviour
                 thisRB.MovePosition(transform.position += offsetVec);
                 if (thePlayer != null)
                 {
+                    thePlayer.ClearYVelocity();
                     thePlayer.transform.position += offsetVec + (Vector3)thePlayer.thisRB.velocity * Time.deltaTime;
                     //Debug.Log(thePlayer.horizontalInputVec);
                     //Debug.Log(thePlayer.thisRB.velocity.x);

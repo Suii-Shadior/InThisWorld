@@ -246,7 +246,7 @@ public class NewPlayerController : MonoBehaviour
             }
 
         }
-        else { Debug.Log("£¿£¿£¿"); }
+
     }
     private void OnTriggerExit2D(Collider2D other)
     {
