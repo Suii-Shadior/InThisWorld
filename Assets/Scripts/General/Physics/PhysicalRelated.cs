@@ -7,10 +7,14 @@ public class PhysicsRelated : MonoBehaviour
 {
     private Rigidbody2D thisRB;
     private Collider2D thisCol;
+    private NewPlayerController thePlayer;
 
     [Header("PhysicsCheck")]
-    private bool isGround;
-    public bool wasGround;
+    private bool isFloored;
+    public bool wasFloored;
+    private bool isGrounded;
+    public bool wasGrounded;
+
     public Transform theGroundCheckpoint;
     private bool isWall;
     public bool wasWall;
@@ -22,14 +26,18 @@ public class PhysicsRelated : MonoBehaviour
     [SerializeField]private bool isHead;
     public Transform theHeadCheckpoint;
 
+
     [Header("3RaycastGroundCheck")]
     public bool isRaycastGround;
     public bool wasRaycastGround;
-    public RaycastHit2D theRaycastCol;
+    private RaycastHit2D theRaycastCol;
     public float footCheckPointOffset;
     public float raycastLength;
 
-    public LayerMask theGround;
+    public LayerMask theCeil;
+    public LayerMask theFloor;
+    public LayerMask theWall;
+    public LayerMask theTrueGround;
     public float theGroundCheckRadius;
     public float theWallCheckRadius;
     public float theForwardCheckRadius;
@@ -63,9 +71,13 @@ public class PhysicsRelated : MonoBehaviour
     //public bool hasDisGround;
     //public float hasDisGroundCounter;
     //public float hasDisGroundLength;
-    public bool hasGround;
-    public float hasGroundCounter;
+    public bool hasGrounded;
+    public float hasGroundedCounter;
     public float hasGroundLength = .1f;
+    public bool hasFloored;
+    public float hasFlooredCounter;
+    public float hasFlooredLength = .1f;
+
     //public bool hasDisWall;
     //public float hasDisWallCounter;
     //public float hasDisWallLength;
@@ -85,11 +97,13 @@ public class PhysicsRelated : MonoBehaviour
     {
         thisRB = GetComponent<Rigidbody2D>();
         thisCol = GetComponent<Collider2D>();
+        thePlayer = GetComponent<NewPlayerController>();
     }
 
     public void PRUpdate()//为了解决不同脚本的UPdate先后问题，将本方法用于PC调用进行Update
     {
-        GroundCheck();
+        FlooredCheck();
+        GroundedCheck();
         RaycastGroundCheck();
         WallCheck();
         ForwardCheck();
@@ -101,20 +115,29 @@ public class PhysicsRelated : MonoBehaviour
         MaterialAndGravityUpdate();
     }
 
-    private void GroundCheck()//用于实现地面判定和触发，但是由于上墙离地都是在当前状态中Update持续更新，且不是唯一的条件，所以ifNeed判定在次作用不大，
+    private void FlooredCheck()//用于实现地面判定和触发，但是由于上墙离地都是在当前状态中Update持续更新，且不是唯一的条件，所以ifNeed判定在次作用不大，
     {
-        WhetherHadGround();//设定离地时间，用来来调节离地瞬间的单纯图层检测的误判
-        isGround = hasGround && Physics2D.OverlapCircle(theGroundCheckpoint.position, theGroundCheckRadius, theGround);//通过图层检测及前述离地时间判断本帧的触地情况
-
+        WhetherHadFloored();
+        wasFloored = isFloored;
+        isFloored = hasFloored && Physics2D.OverlapCircle(theGroundCheckpoint.position, theGroundCheckRadius, theFloor);
 
     }
+
+    private void GroundedCheck()
+    {
+        WhetherHadGrounded();//设定离地时间，用来来调节离地瞬间的单纯图层检测的误判
+        wasGrounded = isGrounded;
+        isGrounded = hasGrounded && Physics2D.OverlapCircle(theGroundCheckpoint.position, theGroundCheckRadius, theTrueGround);//通过图层检测及前述离地时间判断本帧的触地情况
+
+    }
+
 
     private void RaycastGroundCheck()
     {
         WhetherHadRaycastGround();
-        RaycastHit2D theBodyRaycastCheckCol = Physics2D.Raycast(new Vector2(theGroundCheckpoint.position.x + footCheckPointOffset, theGroundCheckpoint.position.y), Vector2.down, raycastLength, theGround);
-        RaycastHit2D theLeftRaycastCheckCol = Physics2D.Raycast(new Vector2(theGroundCheckpoint.position.x - footCheckPointOffset, theGroundCheckpoint.position.y), Vector2.down, raycastLength, theGround);
-        RaycastHit2D theRightRaycastCheckCol = Physics2D.Raycast(new Vector2(theGroundCheckpoint.position.x + footCheckPointOffset, theGroundCheckpoint.position.y), Vector2.down, raycastLength, theGround);
+        RaycastHit2D theBodyRaycastCheckCol = Physics2D.Raycast(new Vector2(theGroundCheckpoint.position.x + footCheckPointOffset, theGroundCheckpoint.position.y), Vector2.down, raycastLength, theFloor);
+        RaycastHit2D theLeftRaycastCheckCol = Physics2D.Raycast(new Vector2(theGroundCheckpoint.position.x - footCheckPointOffset, theGroundCheckpoint.position.y), Vector2.down, raycastLength, theFloor);
+        RaycastHit2D theRightRaycastCheckCol = Physics2D.Raycast(new Vector2(theGroundCheckpoint.position.x + footCheckPointOffset, theGroundCheckpoint.position.y), Vector2.down, raycastLength, theFloor);
 
         if (theBodyRaycastCheckCol){
             isRaycastGround = true;
@@ -149,30 +172,34 @@ public class PhysicsRelated : MonoBehaviour
     private void WallCheck()//用于实现墙面判定和触发，但是由于上墙离地都是在当前状态中Update持续更新，且不是唯一的条件，所以ifNeed判定在次作用不大，
     {
         WhetherHadWall();
-        isWall = hasWall && Physics2D.OverlapCircle(theWallCheckpoint.position, theWallCheckRadius, theGround);
+        wasWall = isWall;
+        isWall = hasWall && Physics2D.OverlapCircle(theWallCheckpoint.position, theWallCheckRadius, theWall);
 
     }
 
     private void ForwardCheck()
     {
         //WhetherHadWall();
-        isForward = Physics2D.OverlapCircle(theForwardCheckpoint.position, theForwardCheckRadius, theGround);
+        isForward = Physics2D.OverlapCircle(theForwardCheckpoint.position, theForwardCheckRadius, theFloor);
     }
 
     private void BackWallCheck()
     {
-        isBackWall = Physics2D.OverlapCircle(theBackWallCheckpoint.position, theBackWallCheckRadius, theGround);
+        
+        isBackWall = Physics2D.OverlapCircle(theBackWallCheckpoint.position, theBackWallCheckRadius, theFloor);
     }
 
 
     private void HeadCheck()
     {
-        isHead = Physics2D.OverlapCircle(theHeadCheckpoint.position, theHeadCheckRadius, theGround);
+        
+        isHead = Physics2D.OverlapCircle(theHeadCheckpoint.position, theHeadCheckRadius, theCeil);
     }
     private void MaterialAndGravityUpdate()
     {
-        if (!isGround)
+        if (!isFloored)
         {
+           
             if (isHolding)
             {
                 HoldingMaterialAndGravityPara();
@@ -182,10 +209,11 @@ public class PhysicsRelated : MonoBehaviour
                 AiringMaterialAndGravityPara();
             }
         }
-        else
+        else if(thePlayer.stateMachine.currentState== thePlayer.idleState|| thePlayer.stateMachine.currentState == thePlayer.runState)
         {
             GroundingMaterialAndGravityPara();
         }
+
     }
 
     private void HoldingMaterialAndGravityPara()
@@ -246,15 +274,31 @@ public class PhysicsRelated : MonoBehaviour
 
 
     #region 物理条件判断方法
-
-    private void WhetherHadGround()
+    private void WhetherHadFloored()
     {
-        if (!hasGround)
+        if (!hasFloored)
         {
-            if (hasGroundCounter > 0f) hasGroundCounter -= Time.deltaTime;
+            if (hasFlooredCounter > 0f) hasFlooredCounter -= Time.deltaTime;
             else
             {
-                hasGround = true;
+                hasFloored = true;
+            }
+        }
+    }
+
+
+
+
+
+
+    private void WhetherHadGrounded()
+    {
+        if (!hasGrounded)
+        {
+            if (hasGroundedCounter > 0f) hasGroundedCounter -= Time.deltaTime;
+            else
+            {
+                hasGrounded = true;
             }
         }
     }
@@ -299,9 +343,9 @@ public class PhysicsRelated : MonoBehaviour
 
     #region 外部调用
 
-    public bool IsOnGround()
+    public bool IsOnFloored()
     {
-        return isGround;
+        return isFloored;
     }
     public bool IsOnWall()
     {
@@ -318,8 +362,8 @@ public class PhysicsRelated : MonoBehaviour
 
     public void LeaveGround()
     {
-        hasGround = false;
-        hasGroundCounter = hasGroundLength;
+        hasGrounded = false;
+        hasGroundedCounter = hasGroundLength;
         riseGravityed = false;
         fallGravityed = false;
 
@@ -343,6 +387,12 @@ public class PhysicsRelated : MonoBehaviour
 
         gravityLock = false;
     }
+
+    public RaycastHit2D RayHit()
+    {
+        return theRaycastCol;
+    }
+
 
     #endregion
 

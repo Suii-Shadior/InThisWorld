@@ -87,4 +87,14 @@ public class PlayerAnimatorController : MonoBehaviour
     }
 
     #endregion
+
+    #region 不合理的外部调用
+    public bool isAttackingPlaying()
+    {
+        return player.thisAC.thisAnim.GetCurrentAnimatorStateInfo(1).IsName("Attack.NewDownwardAttack") || player.thisAC.thisAnim.GetCurrentAnimatorStateInfo(1).IsName("Attack.NewAltAttack")
+            || player.thisAC.thisAnim.GetCurrentAnimatorStateInfo(1).IsName("Attack.NewAttack") || player.thisAC.thisAnim.GetCurrentAnimatorStateInfo(1).IsName("Attack.NewUpwardAttack");
+    }
+    #endregion
+
+
 }

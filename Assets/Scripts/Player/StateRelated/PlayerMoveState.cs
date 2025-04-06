@@ -138,7 +138,7 @@ public class PlayerMoveState : PlayerState
 
     private void WhetherExit()
     {
-        if (!player.thisPR.IsOnGround())
+        if (!player.thisPR.IsOnFloored())
         {
             player.ChangeToAirState();
         }

@@ -54,7 +54,7 @@ public class PlayerIdleState : PlayerState
 
     private void Idle()
     {
-        if (!player.thisPR.IsOnGround())
+        if (!player.thisPR.IsOnFloored())
         {
             player.ChangeToAirState();
         }

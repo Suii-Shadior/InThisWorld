@@ -156,7 +156,7 @@ public class PlayerAirState : PlayerState//TD：需要和Jump状态进行合并
     {
 
 
-        if (player.thisPR.IsOnGround())
+        if (player.thisPR.IsOnFloored())
         {
             stateMachine.ChangeState(player.idleState);
         }

@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Xml;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using static UnityEditor.Rendering.ShadowCascadeGUI;
 
 public class NewPlayerController : MonoBehaviour
 {
@@ -23,6 +25,9 @@ public class NewPlayerController : MonoBehaviour
     private DialogeController theDC;
     private InputController theInput;
     public Transform thisDP;
+    public BoxCollider2D thisBoxCol;
+
+
 
     #endregion
     #region 状态机相关
@@ -32,6 +37,8 @@ public class NewPlayerController : MonoBehaviour
     public NewPlayerRiseState jumpState { get; private set; }
     public NewPlayerFallState fallState { get; private set; }
     public NewPlayerAttackState attackState { get; private set; }
+    public NewPlayerUmbrellaState umbrellaState { get; private set; }
+    public NewPlayerHandleState handleState { get; private set; }
     //public NewPlayerApexState apexState { get; private set; }
 
     #endregion
@@ -78,8 +85,9 @@ public class NewPlayerController : MonoBehaviour
     public bool canHold;
     public bool canWallJump;
     public bool canAttack;
+    public bool canUmbrella;
 
-    [HideInInspector] public bool canTurnAround;
+    public bool canTurnAround;
     [HideInInspector] public bool canWallClimbForward;//要记录下蔚蓝怎么处理的
 
     [Header("技能状态")]
@@ -123,7 +131,8 @@ public class NewPlayerController : MonoBehaviour
 
 
     [Header("雨伞")]
-    public float umbrellaMoveSpeed;
+    public float umbrellaMoveAccelaration;
+    public float umbrellaMoveThresholdSpeed;
     public float umbrellaMoveSpeedMax;
     public float umbrellaFallSpeedMax;
 
@@ -153,7 +162,8 @@ public class NewPlayerController : MonoBehaviour
     [Header("死亡与复活")]
     public float sitCounter;
 
-
+    [Header("操纵台")]
+    public HandlerController theHandle;
 
     [Header("交互相关")]
     public IInteract theInteractable;
@@ -167,6 +177,7 @@ public class NewPlayerController : MonoBehaviour
         thisAC = GetComponentInChildren<PlayerAnimatorController>();
         thisFX = GetComponentInChildren<PlayerFXController>();
         thisCR = GetComponentInChildren<CharacterRelated>();
+        thisBoxCol = GetComponent<BoxCollider2D>();
 
     }
     // Start is called before the first frame update
@@ -178,6 +189,8 @@ public class NewPlayerController : MonoBehaviour
         jumpState = new NewPlayerRiseState(this, stateMachine, "isJumping");
         fallState = new NewPlayerFallState(this, stateMachine, "isFalling");
         attackState =new NewPlayerAttackState(this, stateMachine, "isAttacking");
+        umbrellaState = new NewPlayerUmbrellaState(this, stateMachine, "isUmbrellaing");
+        handleState = new NewPlayerHandleState(this, stateMachine, "isIdling");
         //apexState = new NewPlayerApexState(this, stateMachine, "isFalling");
         theLevel = theCM.theLevel;
         theDC = theCM.theDC;
@@ -188,13 +201,14 @@ public class NewPlayerController : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
-        MovementVecUpdate();
+        InputProcess();
         if (isGameplay)
         {
             thisPR.PRUpdate();
             GameplayCount();
             GameplayCooldownCount();
             CanActCount();
+            stateMachine.currentState.Update();
 
         }
     }
@@ -205,8 +219,8 @@ public class NewPlayerController : MonoBehaviour
         {
             thisPR.PRFixUpdate();
             PR_GravityRelatedUpdate();
-            stateMachine.currentState.Update();
-            TurnAround();
+            stateMachine.currentState.FixedUpdate();
+            //TurnAround();
             FaceDirUpdate();
         }
 
@@ -230,35 +244,69 @@ public class NewPlayerController : MonoBehaviour
         canActCounter = _unactDuration;
     }
     #region 触发器检测
+
+
     private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.GetComponent<FloorController>())
+        {
+            FloorController theFloor = other.GetComponent<FloorController>();
+            theFloor.SetPlayer(this);
+            theFloor.Floor_Enter();
+        }
+    }
+
+
+    private void OnTriggerStay2D(Collider2D other)//Enter在瞬间可能ComCol还没检测到
     {
         if (other.GetComponent<PlatformController>())
         {
-            PlatformController thePlatform= other.GetComponent<PlatformController>();
-            if (thePlatform.GetPlayer() == null && thePlatform.GetComCol() == thisPR.theRaycastCol.collider)
+            PlatformController thePlatform = other.GetComponent<PlatformController>();
+            if (//thePlatform.GetPlayer() == null && 
+                thePlatform.GetComCol() == thisPR.RayHit().collider)
             {
-                Debug.Log("进入");
-                
-
                 thePlatform.SetPlayer(this);
-                thePlatform.Interactive_Sensor();
-                //this.transform.parent = other.transform;
+                if (!thePlatform.hasSensored)
+                {
+                    //Debug.Log("进入");
+                    thePlatform.Interactive_Sensor();
+                    thePlatform.hasSensored = true;
+                }
+
             }
 
+        }else if (other.GetComponent<FloorController>())
+        {
+            FloorController theFloor = other.GetComponent<FloorController>();
+            theFloor.Floor_Stay(); 
         }
-
     }
+
+
+
+
+
+
     private void OnTriggerExit2D(Collider2D other)
     {
         if (other.GetComponent<PlatformController>())
         {
             PlatformController thePlatform = other.GetComponent<PlatformController>();
-            if (thePlatform.GetPlayer() == this)
+                //Debug.Log("退出");
+            //if (
+            //    //thePlatform.GetPlayer() == this&& 
+            //    stateMachine.currentState==jumpState)
             {
-                Debug.Log("退出");
                 thePlatform.SetPlayer(null);
+
                 //this.transform.parent=null;
             }
+            thePlatform.hasSensored = false;
+        }
+        else if(other.GetComponent<FloorController>()) 
+        {
+            other.GetComponent<FloorController>().ClearPlayer();
+            //theFloor.Floor_Exit();
         }
     }
     #endregion
@@ -278,17 +326,12 @@ public class NewPlayerController : MonoBehaviour
 
     private void TurnAround()
     {
-        if (canTurnAround && needTurnAround)
-        {
-            Debug.Log("转身");
-            faceRight = !faceRight;
-            needTurnAround = false;
-        }
+
     }
     #region 改变状态的代码
     public void StateOver()
     {
-        if (thisPR.IsOnGround()) ChangeToIdleState();
+        if (thisPR.IsOnFloored()) ChangeToIdleState();
         else stateMachine.ChangeState(fallState);
     }
     public NewPlayerState CurrentState()
@@ -323,6 +366,12 @@ public class NewPlayerController : MonoBehaviour
     {
         stateMachine.ChangeState(attackState);
     }
+
+    public void ChangeToHandleState()
+    {
+        stateMachine.ChangeState(handleState);
+    }
+
     //public void ChangeToUmbrellaState()
     //{
     //    if (umbrellaAbility && canBabble)
@@ -353,7 +402,7 @@ public class NewPlayerController : MonoBehaviour
         if (coyoteJumpCounter > 0f)
         {
 
-            if (!thisPR.IsOnGround())
+            if (!thisPR.IsOnFloored())
             {
                 if (thisPR.IsOnWall())
                 {
@@ -412,24 +461,40 @@ public class NewPlayerController : MonoBehaviour
     #region 动作
     public void FaceDirUpdate()
     {
-
-        faceDir = (int)transform.localScale.x;
-        if (horizontalInputVec > 0)
+        if (isGameplay)
         {
-            faceRight = true;
-            faceDir = faceRight ? 1 : -1;
-        }
 
-        else if (horizontalInputVec < 0)
-        {
-            faceRight = false;
-            faceDir = faceRight ? 1 : -1;
+            if (canTurnAround)
+            {
+                faceDir = (int)transform.localScale.x;
+                if (horizontalInputVec > 0)
+                {
+                    faceRight = true;
+                    faceDir = faceRight ? 1 : -1;
+                }
+                else if (horizontalInputVec < 0)
+                {
+                    faceRight = false;
+                    faceDir = faceRight ? 1 : -1;
+                }
+                transform.localScale = new Vector3(faceDir, 1, 1);
+
+            }
+            else
+            {
+                //Debug.Log("不能转身");
+            }
         }
         else
         {
-            //Debug.Log("朝向不变");
+            if (canTurnAround && needTurnAround)
+            {
+                Debug.Log("转身");
+                faceRight = !faceRight;
+                needTurnAround = false;
+            }
+
         }
-        transform.localScale = new Vector3(faceDir, 1, 1);
     }
 
 
@@ -466,14 +531,14 @@ public class NewPlayerController : MonoBehaviour
     //private void Crouch()
     //{
     //    //isCrouching = true;
-    //    moveSpeed = crouchSpeed;
+    //    moveRatio = crouchSpeed;
     //    moveSpeedMax = crouchSpeedMax;
     //}
     //private void RiseUp()
     //{
     //    //Debug.Log("起身");
     //    isCrouching = false;
-    //    moveSpeed = wanderSpeed;
+    //    moveRatio = wanderSpeed;
     //    moveSpeedMax = runSpeedMax;
     //}
 
@@ -527,7 +592,7 @@ public class NewPlayerController : MonoBehaviour
 
     public void PR_GravityRelatedUpdate()//用来判断空中Player所在的位置，帮助PR在空中实现重力的调整。但是这个方法写的明显有问题
     {
-        if (thisPR.IsOnGround())
+        if (thisPR.IsOnFloored())
         {
             thisPR.isRising = false;
             thisPR.isFalling = false;
@@ -605,37 +670,90 @@ public class NewPlayerController : MonoBehaviour
         uncontrolCounter = uncontrolDuration;
 
     }
+
+    public bool isStandOnPlatform()
+    {
+        if (thisPR.RayHit().collider)
+        {
+            if (thisPR.RayHit().collider.GetComponent<PlatformController>())
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+
+
     #endregion
 
 
     #region Input相关方法
-    private void MovementVecUpdate()
+
+    private void InputProcess()
     {
-        if (thisPR.IsOnGround())
+        if(stateMachine.currentState == handleState)
         {
-            if (theCM.theInput.horizontalInputVec == faceDir && thisPR.IsOnWall())
-            {
-                horizontalInputVec = 0;
-            }
-            else
-            {
-                horizontalInputVec = theInput.horizontalInputVec;
-            }
+            HnadleVecUpdate();
         }
         else
         {
-            if (theCM.theInput.horizontalInputVec == faceDir && (thisPR.IsOnWall()||thisPR.IsForwad()))
-            {
-                horizontalInputVec = 0;
-            }
-            else
-            {
-                horizontalInputVec = theInput.horizontalInputVec;
-            }
+            MovementVecUpdate();
         }
-        verticalInputVec = theCM.theInput.verticalInputVec;
     }
 
+    private void MovementVecUpdate()
+    {
+        if (isGameplay)
+        {
+            if (canAct)
+            {
+                if (thisPR.IsOnFloored())
+                {
+                    if (theCM.theInput.horizontalInputVec == faceDir && thisPR.IsOnWall())
+                    {
+                        horizontalInputVec = 0;
+                    }
+                    else
+                    {
+                        horizontalInputVec = theInput.horizontalInputVec;
+                    }
+                }
+                else
+                {
+                    if (theCM.theInput.horizontalInputVec == faceDir && (thisPR.IsOnWall() || thisPR.IsForwad()))
+                    {
+                        horizontalInputVec = 0;
+                    }
+                    else
+                    {
+                        horizontalInputVec = theInput.horizontalInputVec;
+                    }
+                }
+                verticalInputVec = theInput.verticalInputVec;
+            }
+        }
+    }
+    private void HnadleVecUpdate()
+    {
+        if (isGameplay) 
+        {
+            if (canAct)
+            {
+            horizontalInputVec = theInput.horizontalInputVec;
+            verticalInputVec = theInput.verticalInputVec;
+
+            }
+        }
+    }
 
     #endregion
 

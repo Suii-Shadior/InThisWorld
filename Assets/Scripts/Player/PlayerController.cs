@@ -368,7 +368,7 @@ public class PlayerController : MonoBehaviour
     #region 外部改变状态方法
     public void StateOver()
     {
-        if (thisPR.IsOnGround()) stateMachine.ChangeState(moveState);
+        if (thisPR.IsOnFloored()) stateMachine.ChangeState(moveState);
         else stateMachine.ChangeState(airState);
     }
 
@@ -476,7 +476,7 @@ public class PlayerController : MonoBehaviour
     }
     public void WhetherCanWallFall()
     {
-        if (!thisPR.IsOnGround() && thisPR.IsOnWall() && thisRB.velocity.y <= 0.1 && stateMachine.currentState != dashState) canWallFall = true;
+        if (!thisPR.IsOnFloored() && thisPR.IsOnWall() && thisRB.velocity.y <= 0.1 && stateMachine.currentState != dashState) canWallFall = true;
         else canWallFall = false;
     }
 
@@ -708,7 +708,7 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            if (thisPR.IsOnGround())
+            if (thisPR.IsOnFloored())
             {
                 stateMachine.ChangeState(idleState);
                 return;
@@ -820,7 +820,7 @@ public class PlayerController : MonoBehaviour
     //private void SlideEnd()
     //{
     //    isSliding = false;
-    //    if (thisPR.isGround)
+    //    if (thisPR.isFloored)
     //    {
     //        WhetherCrouch();
     //    }
@@ -828,21 +828,21 @@ public class PlayerController : MonoBehaviour
     //    {
     //        isCrouching = false;
     //        //Debug.Log("结束滑铲");
-    //        moveSpeed = wanderSpeed;
+    //        moveRatio = wanderSpeed;
     //        moveSpeedMax = runSpeedMax;
     //    }
     //}
     //private void Crouch()
     //{
     //    //isCrouching = true;
-    //    moveSpeed = crouchSpeed;
+    //    moveRatio = crouchSpeed;
     //    moveSpeedMax = crouchSpeedMax;
     //}
     //private void RiseUp()
     //{
     //    //Debug.Log("起身");
     //    isCrouching = false;
-    //    moveSpeed = wanderSpeed;
+    //    moveRatio = wanderSpeed;
     //    moveSpeedMax = runSpeedMax;
     //}
 

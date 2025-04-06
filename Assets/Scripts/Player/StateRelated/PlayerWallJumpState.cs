@@ -167,7 +167,7 @@ public class PlayerWallJumpState : PlayerState//TD：需要和Air状态进行合并，把Wal
             stateMachine.ChangeState(player.airState);
             return;
         }
-        else if (player.thisPR.IsOnGround())
+        else if (player.thisPR.IsOnFloored())
         {
             stateMachine.ChangeState(player.idleState);
             return;

@@ -1,8 +1,9 @@
+using MoveInterfaces;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class NewPlayerAttackState : NewPlayerState,IMove_horizontally,IFall_vertically
+public class NewPlayerAttackState : NewPlayerState,IMove_horizontally, IFall_vertically
 {
     public NewPlayerAttackState(NewPlayerController _player, NewPlayerStateMachine _stateMachine, string _animBoolName) : base(_player, _stateMachine, _animBoolName)
     {
@@ -26,15 +27,23 @@ public class NewPlayerAttackState : NewPlayerState,IMove_horizontally,IFall_vert
         base.Update();
         //KeepInertiaCount();//先注释掉，可以改
         CurrentStateCandoUpdate();
-        HorizontalMove();
         Fall();
+        BoxColUpdate();
         WhetherExit();
 
     }
 
+
+    public override void FixedUpdate()
+    {
+        base.FixedUpdate();
+        HorizontalMove();
+
+    }
     protected override void CurrentStateCandoChange()
     {
         base.CurrentStateCandoChange();
+        player.canTurnAround = true;
         player.canHorizontalMove = true;
         player.canVerticalMove = false;
         //才跳跃，操作逻辑上来看不可能马上又能跳跃的，所以并不刷新操作相关的脱台跳时间
@@ -55,17 +64,23 @@ public class NewPlayerAttackState : NewPlayerState,IMove_horizontally,IFall_vert
 
     private void AttackEnter()
     {
+        //Debug.Log("真按了");
         player.canAttack = false;
-        player.thisAC.SetAttackCounter();
 
     }
 
 
     private void WhetherExit()
     {
-        if (player.thisAC.thisAnim.GetCurrentAnimatorStateInfo(0).normalizedTime >= .9f)
+        if (player.thisAC.isAttackingPlaying() && player.thisAC.thisAnim.GetCurrentAnimatorStateInfo(1).normalizedTime%1 >= .9f)
         {
+            //Debug.Log(player.thisAC.thisAnim.GetCurrentAnimatorClipInfo(1)[0].clip.name);
             player.StateOver();
+        }
+        else
+        {
+            //Debug.Log(player.thisAC.thisAnim.GetCurrentAnimatorStateInfo(1).normalizedTime % 1);
+            //Debug.Log(player.thisAC.thisAnim.GetCurrentAnimatorStateInfo(1).shortNameHash);
         }
     }
     private void AttackExit()
@@ -122,7 +137,7 @@ public class NewPlayerAttackState : NewPlayerState,IMove_horizontally,IFall_vert
                 }
                 else//无键盘输入时，根据当前速度不同进行减速、停止
                 {
-                    if (Mathf.Abs(player.thisRB.velocity.x) < player.horizontalmoveThresholdSpeed)
+                    if (Mathf.Abs(player.thisRB.velocity.x) < player.horizontalmoveThresholdSpeed || player.thisPR.IsOnWall())
                     {
                         //当前速度小于等于启动速度，则停止
                         player.ClearXVelocity();
@@ -136,6 +151,21 @@ public class NewPlayerAttackState : NewPlayerState,IMove_horizontally,IFall_vert
             }
         }
     }
+
+    public void BoxColUpdate()
+    {
+        if (player.thisRB.velocity.y < 0)
+        {
+
+            player.thisBoxCol.enabled = true;
+        }
+        else
+        {
+            player.thisBoxCol.enabled = false;
+
+        }
+    }
+
     public void Fall()
     {
         if (player.thisRB.velocity.y < -player.verticalFallSpeedMax)

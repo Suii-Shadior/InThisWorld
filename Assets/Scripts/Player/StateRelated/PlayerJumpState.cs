@@ -131,7 +131,7 @@ public class PlayerJumpState : PlayerState//TD£ºÐèÒªºÍAir×´Ì¬½øÐÐºÏ²¢£¬°ÑJump¶¯×
         {
             stateMachine.ChangeState(player.airState);
         }
-        else if (player.thisPR.IsOnGround())
+        else if (player.thisPR.IsOnFloored())
         {
             stateMachine.ChangeState(player.idleState);
         }

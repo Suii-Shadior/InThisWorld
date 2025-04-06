@@ -5046,6 +5046,7 @@ MonoBehaviour:
   theCM: {fileID: 0}
   actionStats: {fileID: 0}
   thisDP: {fileID: 780205958189550221}
+  thisBoxCol: {fileID: 0}
   isGameplay: 0
   canAct: 0
   canActCounter: 0
@@ -5076,6 +5077,7 @@ MonoBehaviour:
   canHold: 0
   canWallJump: 0
   canAttack: 0
+  canUmbrella: 0
   canTurnAround: 0
   canWallClimbForward: 0
   canBabble: 0
@@ -5097,7 +5099,8 @@ MonoBehaviour:
   releaseDuringRising: 0
   coyoteJumpLength: 0.06
   jumpBufferLength: 0.05
-  umbrellaMoveSpeed: 0
+  umbrellaMoveAccelaration: 0
+  umbrellaMoveThresholdSpeed: 0
   umbrellaMoveSpeedMax: 0
   umbrellaFallSpeedMax: 0
   attackCounter: 0
@@ -5115,6 +5118,7 @@ MonoBehaviour:
   invinsibleCounter: 0
   invinsibleLength: 0
   sitCounter: 0
+  theHandle: {fileID: 0}
 --- !u!70 &8169191056153106860
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -5162,7 +5166,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4bb011f66a995d43980d7f560c6ce16, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  wasGround: 0
+  wasFloored: 0
+  wasGrounded: 0
   theGroundCheckpoint: {fileID: 8272504376344324307}
   wasWall: 0
   theWallCheckpoint: {fileID: 8331267247384281171}
@@ -5174,11 +5179,17 @@ MonoBehaviour:
   isRaycastGround: 0
   wasRaycastGround: 0
   footCheckPointOffset: 0.05
-  raycastLength: 0.2
-  theGround:
+  raycastLength: 0.4
+  theCeil:
     serializedVersion: 2
     m_Bits: 256
-  theGroundCheckRadius: 0.2
+  theFloor:
+    serializedVersion: 2
+    m_Bits: 384
+  theTrueGround:
+    serializedVersion: 2
+    m_Bits: 256
+  theGroundCheckRadius: 0.1
   theWallCheckRadius: 0.1
   theForwardCheckRadius: 0.1
   theBackWallCheckRadius: 0.1
@@ -5201,9 +5212,12 @@ MonoBehaviour:
   fallGravityMultiplier: 0.18
   normalDrag: 0
   airDrag: 1
-  hasGround: 0
-  hasGroundCounter: 0
+  hasGrounded: 0
+  hasGroundedCounter: 0
   hasGroundLength: 0.1
+  hasFloored: 0
+  hasFlooredCounter: 0
+  hasFlooredLength: 0.1
   hasWall: 0
   hasWallCounter: 0
   hasWallLength: 0.1
@@ -5255,7 +5269,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.2, y: 0.4}
+  m_Size: {x: 0.2, y: 0.35}
   m_EdgeRadius: 0
 --- !u!1 &2555693919137107106
 GameObject:
@@ -5404,7 +5418,7 @@ PolygonCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
@@ -10773,7 +10787,7 @@ PolygonCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
@@ -15944,7 +15958,7 @@ PolygonCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
@@ -16254,7 +16268,7 @@ PolygonCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}

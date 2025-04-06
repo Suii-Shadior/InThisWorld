@@ -8,7 +8,7 @@ public class CameraController : MonoBehaviour
     public Transform playerItself;
     public Transform horizontalMove;
     private CinemachineVirtualCamera thisCamera;
-
+    private Vector3 cameraLocationOffset;
 
     private void Awake()
     {
@@ -18,13 +18,14 @@ public class CameraController : MonoBehaviour
     }
     void Start()
     {
-        thisCamera.Follow = playerItself;
+        cameraLocationOffset = transform.position-playerItself.position;
     }
 
     // Update is called once per frame
     void Update()
     {
         //FollowPointUpdate();
+
     }
     private void FollowPointUpdate()
     {
@@ -32,7 +33,7 @@ public class CameraController : MonoBehaviour
         if (Mathf.Abs(thePlayer.thisRB.velocity.x) > .1f)
         {
             //Debug.Log("Ç°½ø");
-            thisCamera.Follow = horizontalMove;
+            
 
             thisCamera.GetCinemachineComponent<CinemachineFramingTransposer>().m_TrackedObjectOffset = new Vector3(thePlayer.faceDir, 0f, 0f);
         }

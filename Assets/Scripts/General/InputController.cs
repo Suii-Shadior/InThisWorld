@@ -97,28 +97,13 @@ public class InputController : MonoBehaviour
             {
                 if (thePlayer.canAct&&thePlayer.canAttack)
                 {
+                    //Debug.Log("按了");
                     if(theInput.Gameplay.Movement.ReadValue<Vector2>().y > 0)
                     {
                         thePlayer.attackCounter = 4;
                     }
-                    else if (theInput.Gameplay.Movement.ReadValue<Vector2>().y < 0)
+                    else if (!thePlayer.thisPR.IsOnFloored()&&theInput.Gameplay.Movement.ReadValue<Vector2>().y < 0)
                     {
-                        //if (!thePlayer.thisPR.IsOnGround())
-                        //{
-                        //    thePlayer.attackCounter = 3;
-                        //}
-                        //else
-                        //{
-                        //    if (thePlayer.continueAttackCounter > 0 && thePlayer.attackCounter == 1)
-                        //    {
-                        //        thePlayer.attackCounter = 2;
-                        //    }
-                        //    else
-                        //    {
-                        //        thePlayer.attackCounter = 1;
-
-                        //    }
-                        //}
                         thePlayer.attackCounter = 3;
                     }
                     else
@@ -132,13 +117,18 @@ public class InputController : MonoBehaviour
                             thePlayer.attackCounter = 1;
                         }
                     }
+                    thePlayer.thisAC.SetAttackCounter();
                     thePlayer.ChangeToAttackState();
 
                 }
             };
             theInput.Gameplay.Interact.started += ctx =>
             {
-                if (thePlayer.theInteractable != null)
+                if (thePlayer.CurrentState() == thePlayer.handleState)
+                {
+                    thePlayer.StateOver();//不确定这里有没有风险
+                }
+                else if (thePlayer.theInteractable != null)
                 {
                     thePlayer.theInteractable.Interact();
                 }

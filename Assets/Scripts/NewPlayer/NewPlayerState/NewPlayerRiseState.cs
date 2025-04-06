@@ -1,8 +1,9 @@
+using MoveInterfaces;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class NewPlayerRiseState : NewPlayerState,IMove_horizontally
+public class NewPlayerRiseState : NewPlayerState, IMove_horizontally
 {
     public NewPlayerRiseState(NewPlayerController _player, NewPlayerStateMachine _stateMachine, string _animBoolName) : base(_player, _stateMachine, _animBoolName)
     {
@@ -17,8 +18,7 @@ public class NewPlayerRiseState : NewPlayerState,IMove_horizontally
     }
     public void Jump()
     {
-
-        
+        //Time.timeScale = 0.1f;
         player.releaseDuringRising = false;
         player.isPastApexThreshold = false;
         player.holdingCounter = 0f;
@@ -31,18 +31,24 @@ public class NewPlayerRiseState : NewPlayerState,IMove_horizontally
     public override void Exit()
     {
         base.Exit();
+
     }
 
     public override void Update()
     {
         base.Update();
         CurrentStateCandoUpdate();
-        HorizontalMove();//在跳起过程中X轴移动速度仍然保持相同的加速度
         WhetherExit();
+    }
+    public override void FixedUpdate()
+    {
+        base.FixedUpdate();
+        HorizontalMove();//在跳起过程中X轴移动速度仍然保持相同的加速度
     }
     protected override void CurrentStateCandoChange()
     {
         base.CurrentStateCandoChange();
+        player.canTurnAround = true;
         player.canHorizontalMove = true;
         player.canVerticalMove = false;
         //才跳跃，操作逻辑上来看不可能马上又能跳跃的，所以并不刷新操作相关的脱台跳时间
@@ -58,6 +64,8 @@ public class NewPlayerRiseState : NewPlayerState,IMove_horizontally
         //{
         //    player.thisPR.GravityLock(player.thisPR.peakGravity);
         //}
+        player.thisBoxCol.enabled = false;
+
         player.horizontalMoveSpeedAccleration = player.airmoveAccleration;
         player.horizontalmoveThresholdSpeed = player.airmoveThresholdSpeed;
         player.horizontalMoveSpeedMax = player.airmoveSpeedMax;
@@ -67,16 +75,20 @@ public class NewPlayerRiseState : NewPlayerState,IMove_horizontally
 
     private void WhetherExit()//
     {
-        if (player.thisPR.IsOnGround())
+        //if (player.thisPR.IsOnFloored())
+        //{
+        //    Debug.Log("???");
+        //    player.ChangeToIdleState();
+        //}
+        //else
+        if (player.thisPR.IsHead())//分开的主要目的还是考虑到可能会有不同处理，比如添加peak状态后
         {
-            player.ChangeToIdleState();
-        }
-        else if (player.thisPR.IsHead())//分开的主要目的还是考虑到可能会有不同处理，比如添加peak状态后
-        {
+            player.ClearYVelocity();
             player.ChangeToFallState();
         }
         else if (player.thisRB.velocity.y < 0)
         {
+
             player.ChangeToFallState();
         } 
         //if (player.thisRB.velocity.y < -player.peakSpeed) //要添加peak状态时启用
@@ -135,7 +147,7 @@ public class NewPlayerRiseState : NewPlayerState,IMove_horizontally
                 }
                 else//无键盘输入时，根据当前速度不同进行减速、停止
                 {
-                    if (Mathf.Abs(player.thisRB.velocity.x) < player.horizontalmoveThresholdSpeed)
+                    if (Mathf.Abs(player.thisRB.velocity.x) < player.horizontalmoveThresholdSpeed || player.thisPR.IsOnWall())
                     {
                         //当前速度小于等于启动速度，则停止
                         player.ClearXVelocity();

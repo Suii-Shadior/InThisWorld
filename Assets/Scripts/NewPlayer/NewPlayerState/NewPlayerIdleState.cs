@@ -1,3 +1,4 @@
+using MoveInterfaces;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,29 +11,36 @@ public class NewPlayerIdleState : NewPlayerState, IMove_horizontally
     public override void Enter()
     {
         base.Enter();
-        IdleEnter();
         CurrentStateCandoChange();
+        IdleEnter();
     }
 
     public override void Exit()
     {
         base.Exit();
-        player.canCooldown = true;
     }
 
     public override void Update()
     {
         base.Update();
         CurrentStateCandoUpdate();
-        HorizontalMove();
         WhetherExit();
 
+
+    }
+
+
+    public override void FixedUpdate()
+    {
+        base.FixedUpdate();
+        HorizontalMove();
 
     }
 
     protected override void CurrentStateCandoChange()
     {
         base.CurrentStateCandoChange();
+        player.canTurnAround = true;
         player.canHorizontalMove = true;
         player.canVerticalMove = false;
         player.RefreshCanJump();
@@ -52,6 +60,13 @@ public class NewPlayerIdleState : NewPlayerState, IMove_horizontally
     private void IdleEnter()
     {
 
+        player.ClearYVelocity();
+        if (player.isStandOnPlatform() && !player.thisPR.wasFloored) 
+        {
+            //Debug.Log("落上平台");
+            player.transform.position -=new Vector3(0, player.thisPR.RayHit().distance,0);
+        }
+        player.thisBoxCol.enabled = true;
         player.horizontalMoveSpeedAccleration = player.normalmoveAccleration; 
         player.horizontalMoveSpeedMax = player.normalmoveSpeedMax;
         player.horizontalmoveThresholdSpeed = player.normalmoveThresholdSpeed;
@@ -59,7 +74,7 @@ public class NewPlayerIdleState : NewPlayerState, IMove_horizontally
 
     private void WhetherExit()
     {
-        if (!player.thisPR.IsOnGround())
+        if (!player.thisPR.IsOnFloored())
         {
             player.thisPR.LeaveGround();
             player.ChangeToFallState();
@@ -68,6 +83,7 @@ public class NewPlayerIdleState : NewPlayerState, IMove_horizontally
         else
         if (player.horizontalInputVec != 0)
         {
+            
             player.ChangeToHorizontalMoving();
             return;
         }
@@ -83,7 +99,7 @@ public class NewPlayerIdleState : NewPlayerState, IMove_horizontally
         }
         else
         {
-            if (Mathf.Abs(player.thisRB.velocity.x) < player.horizontalmoveThresholdSpeed)
+            if (Mathf.Abs(player.thisRB.velocity.x) < player.horizontalmoveThresholdSpeed||player.thisPR.IsOnWall())
             {
                 //当前速度小于等于启动速度，则停止
                 player.ClearXVelocity();

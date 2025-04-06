@@ -1,10 +1,11 @@
+using MoveInterfaces;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
 
-public class NewPlayerRunState : NewPlayerState,IMove_horizontally
+public class NewPlayerRunState : NewPlayerState, IMove_horizontally
 {
     public NewPlayerRunState(NewPlayerController _player, NewPlayerStateMachine _stateMachine, string _animBoolName) : base(_player, _stateMachine, _animBoolName)
     {
@@ -27,13 +28,19 @@ public class NewPlayerRunState : NewPlayerState,IMove_horizontally
         base.Update();
         //KeepInertiaCount();
         CurrentStateCandoUpdate();
-        HorizontalMove();
         WhetherExit();
+    }
+
+    public override void FixedUpdate()
+    {
+        base.FixedUpdate();
+        HorizontalMove();
     }
 
     protected override void CurrentStateCandoChange()
     {
         base.CurrentStateCandoChange();
+        player.canTurnAround = true;
         player.canHorizontalMove = true;
         player.canVerticalMove = false;
         player.RefreshCanJump();
@@ -55,24 +62,28 @@ public class NewPlayerRunState : NewPlayerState,IMove_horizontally
         //{
         //    player.thisPR.GravityLock(player.thisPR.peakGravity);
         //}
+        player.thisBoxCol.enabled = true;
+
         player.horizontalMoveSpeedAccleration = player.normalmoveAccleration;
         //player.horizontalMoveSpeed = player.normalmoveSpeed;
         player.horizontalMoveSpeedMax = player.normalmoveSpeedMax;
         player.horizontalmoveThresholdSpeed = player.normalmoveThresholdSpeed;
+        HorizontalMove();
     }
 
 
 
     private void WhetherExit()
     {
-        if (!player.thisPR.IsOnGround())
+        if (!player.thisPR.IsOnFloored())
         {
             player.thisPR.LeaveGround();
             player.ChangeToFallState();
             return;
         }
-        else if (Mathf.Abs(player.thisRB.velocity.x) < 0.1)
+        else if (player.horizontalInputVec == 0)
         {
+            //Debug.Log("停下");
             player.ChangeToIdleState();
             return;
         }
@@ -120,7 +131,7 @@ public class NewPlayerRunState : NewPlayerState,IMove_horizontally
                 }
                 else//无键盘输入时，根据当前速度不同进行减速、停止
                 {
-                    if (Mathf.Abs(player.thisRB.velocity.x) < player.horizontalmoveThresholdSpeed)
+                    if (Mathf.Abs(player.thisRB.velocity.x) < player.horizontalmoveThresholdSpeed || player.thisPR.IsOnWall())
                     {
                         //当前速度小于等于启动速度，则停止
                         player.ClearXVelocity();

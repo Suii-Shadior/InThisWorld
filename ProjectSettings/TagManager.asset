@@ -11,8 +11,8 @@ TagManager:
   - 
   - Water
   - UI
-  - 
-  - 
+  - OnewayPlatform
+  - Platform
   - Ground
   - PostProcessing
   - 
@@ -41,9 +41,15 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: Player
-    uniqueID: 3129055895
+  - name: MidBackground
+    uniqueID: 1868736955
     locked: 0
   - name: Ground
     uniqueID: 3272967203
+    locked: 0
+  - name: Cover
+    uniqueID: 2982174745
+    locked: 0
+  - name: Player
+    uniqueID: 3129055895
     locked: 0

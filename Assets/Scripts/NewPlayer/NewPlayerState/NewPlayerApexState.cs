@@ -25,14 +25,19 @@ public class NewPlayerApexState : NewPlayerState
     {
         base.Update();
         //KeepInertiaCount();//先注释掉，可以改
-        HorizontalMove();
-        Fall();
         CurrentStateCandoUpdate();
         ApexCounter();
         WhetherExit();
 
     }
 
+
+    public override void FixedUpdate()
+    {
+        base.FixedUpdate();
+        HorizontalMove();
+        Fall();
+    }
     protected override void CurrentStateCandoChange()
     {
         base.CurrentStateCandoChange();
@@ -137,7 +142,7 @@ public class NewPlayerApexState : NewPlayerState
     }
     public void WhetherExit()
     {
-        if (player.thisPR.IsOnGround())
+        if (player.thisPR.IsOnFloored())
         {
             player.ChangeToIdleState();
         }

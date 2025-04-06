@@ -32,6 +32,10 @@ public class NewPlayerState
     {
 
     }
+    public virtual void FixedUpdate()
+    {
+
+    }
 
     public virtual void Exit()
     {

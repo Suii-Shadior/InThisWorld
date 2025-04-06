@@ -1,8 +1,10 @@
+using MoveInterfaces;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class NewPlayerFallState : NewPlayerState,IMove_horizontally,IFall_vertically
+
+public class NewPlayerFallState : NewPlayerState, IFall_vertically, IMove_horizontally
 {
     public NewPlayerFallState(NewPlayerController _player, NewPlayerStateMachine _stateMachine, string _animBoolName) : base(_player, _stateMachine, _animBoolName)
     {
@@ -18,22 +20,29 @@ public class NewPlayerFallState : NewPlayerState,IMove_horizontally,IFall_vertic
     public override void Exit()
     {
         base.Exit();
+
     }
 
     public override void Update()
     {
         base.Update();
         //KeepInertiaCount();//先注释掉，可以改
-        HorizontalMove();
-        Fall();
         CurrentStateCandoUpdate();
+        Fall();
         WhetherExit();
+
+    }
+    public override void FixedUpdate()
+    {
+        base.FixedUpdate();
+        HorizontalMove();
 
     }
 
     protected override void CurrentStateCandoChange()
     {
         base.CurrentStateCandoChange();
+        player.canTurnAround = true;
         player.canHorizontalMove = true;
         player.canVerticalMove = false;
         //才跳跃，操作逻辑上来看不可能马上又能跳跃的，所以并不刷新操作相关的脱台跳时间
@@ -53,10 +62,9 @@ public class NewPlayerFallState : NewPlayerState,IMove_horizontally,IFall_vertic
 
     private void FallEnter()
     {
-        //if (player.keepInertia)
-        //{
-        //    player.thisPR.GravityLock(player.thisPR.peakGravity);
-        //}
+
+        player.thisBoxCol.enabled = true;
+
         player.releaseDuringRising = true;
         player.horizontalMoveSpeedAccleration = player.airmoveAccleration;
         player.horizontalmoveThresholdSpeed = player.airmoveThresholdSpeed;
@@ -106,7 +114,7 @@ public class NewPlayerFallState : NewPlayerState,IMove_horizontally,IFall_vertic
                 }
                 else//无键盘输入时，根据当前速度不同进行减速、停止
                 {
-                    if (Mathf.Abs(player.thisRB.velocity.x) < player.horizontalmoveThresholdSpeed)
+                    if (Mathf.Abs(player.thisRB.velocity.x) < player.horizontalmoveThresholdSpeed || player.thisPR.IsOnWall())
                     {
                         //当前速度小于等于启动速度，则停止
                         player.ClearXVelocity();
@@ -122,8 +130,9 @@ public class NewPlayerFallState : NewPlayerState,IMove_horizontally,IFall_vertic
     }
     public void WhetherExit()
     {
-        if (player.thisPR.IsOnGround())
+        if (player.thisPR.IsOnFloored())
         {
+
             player.ChangeToIdleState();
         }
         
@@ -138,8 +147,7 @@ public class NewPlayerFallState : NewPlayerState,IMove_horizontally,IFall_vertic
         }
         else
         {
-            if(player.thisRB.velocity.y>0)
-            Debug.Log(player.thisRB.velocity.y);
+
         }
     }
 

@@ -1,3 +1,4 @@
+using AttackInterfaces;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -17,9 +18,9 @@ public class AttackArea : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.GetComponent<Enemy>())
+        if (other.GetComponent<TurtleController>())
         {
-            Enemy enemy = other.gameObject.GetComponentInParent<Enemy>();
+            TurtleController enemy = other.gameObject.GetComponentInParent<TurtleController>();
             PlayerController player = this.GetComponentInParent<PlayerController>();
             
         }
@@ -29,13 +30,21 @@ public class AttackArea : MonoBehaviour
 
     private void AttackDirection()
     {
-        if (thePlayer.transform.position.x > transform.position.x)
+        switch (thePlayer.attackCounter)
         {
-            AttackDir = -1;
-        }
-        else
-        {
-            AttackDir = 1;
+            case 1:
+                AttackVec = new Vector2(thePlayer.faceDir,0);
+                break;
+            case 2:
+                AttackVec = new Vector2(thePlayer.faceDir, 0);
+                break;
+            case 3:
+                AttackVec = new Vector2(0, -1);
+                break;
+            case 4:
+                AttackVec = new Vector2(0, 1);
+                break;
+
         }
 
     }
