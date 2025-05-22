@@ -3,13 +3,16 @@ using System.Collections.Generic;
 using UnityEditor.Animations;
 using UnityEngine;
 using InteractiveAndInteractableEnums;
+using StructForSaveData;
 
-public class OpenerController:MonoBehaviour
+public class OpenerController:MonoBehaviour,ISave<OpenerSaveData>
 {
     #region 组件
     private Animator thisAnim;
     private BoxCollider2D thisBoxCol;
+    private EventController theEC;
     #endregion
+    public OpenerSaveData thisOpenerSaveData;
     [Header("————使用说明————\n1、选择本脚本适用的开门器类型，thisOpenerType\n2、添加相应的门对象\n3、根据种类同进行设定，详情看对应Related")]
     [Space(3)]
 
@@ -17,6 +20,7 @@ public class OpenerController:MonoBehaviour
     public openerType thisOpenerType;
     public DoorController theDoor;
     [Header("Opener Info")]
+
     public bool isPressed;
 
 
@@ -28,12 +32,7 @@ public class OpenerController:MonoBehaviour
     [Header("Key Related")]
     public AnimatorController theKeyAnimator;
     public GameObject theKeyPrefab;
-    [Header("Hider Related")]
-    //要用单独的动画
-    //public AnimatorController theHiderAnimator;
-    public PlatformController theHidePlatform;
-    public float ReappearCounter;
-    public float ReappearDuration;
+
 
     [Header("Animator Related")]
     private const string PRESSEDSTR = "isPressed";
@@ -48,34 +47,85 @@ public class OpenerController:MonoBehaviour
         thisAnim = GetComponentInChildren<Animator>();
         thisBoxCol = GetComponent<BoxCollider2D>();
     }
+    private void OnEnable()
+    {
+        theEC = ControllerManager.instance.theEvent;
+        SceneLoadSetting_Itself();
+        SceneLoadSetting_Relative();
+    }
 
-
-    private void Start()
+    private void SceneLoadSetting_Itself()
     {
         switch (thisOpenerType)
         {
             case openerType.trigerable_button:
-                Opener_ButtonStart();
+                Opener_Button_Itself();
                 break;
             case openerType.triggerable_debris:
-                Opener_DebrisStart();
+                Opener_Debris_Itself();
                 break;
             case openerType.triggerable_key:
-                Opener_KeyStart();
+                Opener_Key_Itself();
                 break;
-            case openerType.autoresetable_hider:
-                Opener_HiderStart();
+
+        }
+    }
+
+
+    private void SceneLoadSetting_Relative()
+    {
+        switch (thisOpenerType)
+        {
+            case openerType.trigerable_button:
+                Opener_Button_Relative();
                 break;
+            case openerType.triggerable_debris:
+                Opener_Debris_Relative();
+                break;
+            case openerType.triggerable_key:
+                Opener_Key_Relative();
+                break;
+
+        }
+    }
+
+
+
+
+
+    private void Start()
+    {
+        SceneLoadSetting_Related();
+    }
+
+
+    private void SceneLoadSetting_Related()
+    {
+        switch (thisOpenerType)
+        {
+            case openerType.trigerable_button:
+                Opener_Button_Related();
+                break;
+            case openerType.triggerable_debris:
+                Opener_Debris_Related();
+                break;
+            case openerType.triggerable_key:
+                Opener_Key_Related();
+                break;
+
         }
     }
 
     #region 初始化相关
 
-    private void Opener_ButtonStart()
+    #region Opener_Button
+
+    private void Opener_Button_Itself()
     {
         thisAnim.runtimeAnimatorController = theButtonAnimator;
+        RegisterSaveable(GetComponent<ISaveable>());
+        isPressed = thisOpenerSaveData.isPressed;
 
-        //读取存档
         if (isPressed)
         {
             thisBoxCol.enabled = false;
@@ -87,18 +137,43 @@ public class OpenerController:MonoBehaviour
             thisAnim.SetBool(UNPRESSEDSTR, true);
         }
     }
+    private void Opener_Button_Relative()
+    {
 
-    private void Opener_DebrisStart()
+    }
+    private void Opener_Button_Related()
+    {
+
+    }
+    #endregion
+
+    #region Opener_Debris
+    private void Opener_Debris_Itself()
     {
         Debug.Log("运行了吗？");
         thisAnim.runtimeAnimatorController = theDebrisAnimator;
         thisBoxCol.enabled = true;
         thisAnim.SetBool(UNPRESSEDSTR, true);
     }
+    private void Opener_Debris_Relative()
+    {
 
-    private void Opener_KeyStart()
+    }
+    private void Opener_Debris_Related()
+    {
+
+    }
+
+
+
+    #endregion
+
+    #region Opener_Key
+    private void Opener_Key_Itself()
     {
         thisAnim.runtimeAnimatorController = theKeyAnimator;
+        RegisterSaveable(GetComponent<ISaveable>());
+        isPressed = thisOpenerSaveData.isPressed;
         if (isPressed)
         {
             thisBoxCol.enabled = false;
@@ -110,15 +185,18 @@ public class OpenerController:MonoBehaviour
             thisAnim.SetBool(UNPRESSEDSTR, true);
         }
     }
-
-    private void Opener_HiderStart()
+    private void Opener_Key_Relative()
     {
-        //thisAnim.runtimeAnimatorController = theHiderAnimator;
-        thisAnim.runtimeAnimatorController = theButtonAnimator;
-        thisBoxCol.enabled = true;
-        thisAnim.SetBool(UNPRESSEDSTR, true);
 
     }
+
+    private void Opener_Key_Related()
+    {
+
+    }
+
+    #endregion
+
 
     #endregion
 
@@ -131,31 +209,19 @@ public class OpenerController:MonoBehaviour
             case openerType.triggerable_debris:
                 break;
             case openerType.triggerable_key:
+
                 break;
-            case openerType.autoresetable_hider:
-                Opener_HiderUpdate();
-                break;
+
         }
     }
-    #region Update相关
 
-    private void Opener_HiderUpdate()
+
+    private void OnDisable()
     {
 
-        if (ReappearCounter > 0)
-        {
-            ReappearCounter -= Time.deltaTime;
-        }
-        else
-        {
-            isPressed = false;
-            thisAnim.SetTrigger(UNPRESSINGSTR);
-            theHidePlatform.ReappearThisPlatform();
-
-        }
+        SaveDataSync();
+        theEC.SaveableUnregisterPublish(GetComponent<ISaveable>());
     }
-    #endregion
-
 
     #region Press相关
     private void OnTriggerEnter2D(Collider2D other)
@@ -173,9 +239,7 @@ public class OpenerController:MonoBehaviour
                 case openerType.triggerable_key:
                     Opener_KeyPress();
                     break;
-                case openerType.autoresetable_hider:
-                    Opener_HiderPress();
-                    break;
+
             }
         }
     }
@@ -211,17 +275,7 @@ public class OpenerController:MonoBehaviour
         }
     }
 
-    private void Opener_HiderPress()
-    {
-        if (!isPressed)
-        {
-            Debug.Log("xiaoshi");
-            isPressed = true;
-            thisAnim.SetTrigger(PRESSINGSTR);
-            theHidePlatform.HideThisPlatform();
-            ReappearCounter = ReappearDuration;
-        }
-    }
+
 
     #endregion
 
@@ -232,4 +286,56 @@ public class OpenerController:MonoBehaviour
         isPressed = false;
         thisAnim.SetTrigger(UNPRESSINGSTR);
     }
+
+
+
+
+
+    #region ISave接口相关
+    public string GetISaveID()
+    {
+        return thisOpenerSaveData.SaveableID;
+    }
+    public void RegisterSaveable(ISaveable _saveable)
+    {
+        theEC.SaveableRegisterPublish(_saveable);
+    }
+
+    public void UnregisterSaveable(ISaveable _saveable)
+    {
+        theEC.SaveableUnregisterPublish(_saveable);   
+    }
+
+    public void LoadSpecificData(SaveData _passingData)
+    {
+        thisOpenerSaveData.CopyData(GetSpecificDataByISaveable(_passingData));
+    }
+
+
+    public SaveData SaveDatalizeSpecificData()
+    {
+        SaveData _savedata = new()
+        {
+            key = thisOpenerSaveData.SaveableID,
+            type = TypeRegistry.GetDataTypeFromReverseDict(typeof(OpenerSaveData)),
+            value = JsonUtility.ToJson(thisOpenerSaveData)
+        };
+        return _savedata;
+    }
+    public void SaveDataSync()
+    {
+        thisOpenerSaveData.isPressed = isPressed;
+    }
+    public OpenerSaveData GetSpecificDataByISaveable(SaveData _passedData)
+    {
+        OpenerSaveData thedata = JsonUtility.FromJson<OpenerSaveData>(_passedData.value);
+        //Debug.Log(thedata.isOpened);
+        return thedata;
+    }
+
+
+
+
+
+    #endregion
 }

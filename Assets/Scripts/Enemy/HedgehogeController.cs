@@ -1,10 +1,10 @@
-using AttackInterfaces;
+using AttackableInterfaces;
 using EnemyEnums;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class HedgehogeController : MonoBehaviour,IPhysicalAttack
+public class HedgehogeController : MonoBehaviour,IPhysicalAttackable
 {
     #region ×é¼þ
     private Animator thisAnim;
@@ -76,12 +76,12 @@ public class HedgehogeController : MonoBehaviour,IPhysicalAttack
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.GetComponent<AttackArea>())
+        if (other.TryGetComponent<AttackArea>(out AttackArea attackArea))
         {
-            BePhysicalAttacked();
+            BePhysicalAttacked(attackArea);
         }
     }
-    public void BePhysicalAttacked()
+    public void BePhysicalAttacked(AttackArea attackArea)
     {
         thisHedgehogeState = HedgehogState.deadstate;
         thisCol.enabled = false;

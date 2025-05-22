@@ -1,4 +1,4 @@
-namespace MoveInterfaces
+namespace PlayerInterfaces
 {
    public interface IFall_vertically
     {
@@ -9,6 +9,19 @@ namespace MoveInterfaces
     {
         void HorizontalMove();
     }
+    public interface IJump 
+    {
+        void Jump();
+    }
+    public interface IInteract
+    {
 
+        void Interact();
+    }
+    public interface IHandle 
+    {
+        void HandlerUpdate();
+        void ClearInput();
+    }
 
 }

@@ -1,4 +1,4 @@
-using AttackInterfaces;
+using AttackableInterfaces;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,7 +11,7 @@ public class AttackArea : MonoBehaviour
     public Vector2 AttackVec;
 
 
-    private void Start()
+    private void OnEnable()
     {
         AttackDirection();
     }
@@ -21,7 +21,7 @@ public class AttackArea : MonoBehaviour
         if (other.GetComponent<TurtleController>())
         {
             TurtleController enemy = other.gameObject.GetComponentInParent<TurtleController>();
-            PlayerController player = this.GetComponentInParent<PlayerController>();
+            NewPlayerController player = this.GetComponentInParent<NewPlayerController>();
             
         }
 
@@ -30,7 +30,7 @@ public class AttackArea : MonoBehaviour
 
     private void AttackDirection()
     {
-        switch (thePlayer.attackCounter)
+        switch (thePlayer.attackSignal)
         {
             case 1:
                 AttackVec = new Vector2(thePlayer.faceDir,0);
@@ -46,6 +46,6 @@ public class AttackArea : MonoBehaviour
                 break;
 
         }
-
+        Debug.Log(AttackVec);
     }
 }

@@ -1,9 +1,9 @@
-using AttackInterfaces;
+using AttackableInterfaces;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class EnemyBase : MonoBehaviour, IPhysicalAttack
+public abstract class EnemyBase : MonoBehaviour, IPhysicalAttackable
 {
 
     #region ×é¼þ
@@ -30,7 +30,6 @@ public abstract class EnemyBase : MonoBehaviour, IPhysicalAttack
     }
 
 
-    public abstract void BePhysicalAttacked();
 
     public abstract void ResetThisEnemy();
     public void SetPlayer(NewPlayerController _theplayer)
@@ -61,4 +60,6 @@ public abstract class EnemyBase : MonoBehaviour, IPhysicalAttack
     {
         return theDetectPoint.position;
     }
+
+    public abstract void BePhysicalAttacked(AttackArea attackArea);
 }

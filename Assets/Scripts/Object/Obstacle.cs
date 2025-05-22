@@ -1,4 +1,4 @@
-using AttackInterfaces;
+using AttackableInterfaces;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Animations;
@@ -6,7 +6,7 @@ using UnityEngine;
 using OtherEnum;
 
 
-public class Obstacle : MonoBehaviour, IPhysicalAttack
+public class Obstacle : MonoBehaviour, IPhysicalAttackable
 {
 
     private SpriteRenderer thisSR;
@@ -251,5 +251,10 @@ public class Obstacle : MonoBehaviour, IPhysicalAttack
             thisAnim.SetTrigger(ATTACKINGSTR);
         }
         beAttackedCounter = beAttackedDuration;
+    }
+
+    public void BePhysicalAttacked(AttackArea attackArea)
+    {
+        throw new System.NotImplementedException();
     }
 }

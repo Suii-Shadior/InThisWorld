@@ -1,4 +1,4 @@
-using MoveInterfaces;
+using PlayerInterfaces;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -31,9 +31,9 @@ public class NewPlayerUmbrellaState : NewPlayerState, IMove_horizontally, IFall_
 
     public void HorizontalMove()
     {
-        if (player.isGameplay)
+        if (player.GetIsGamePlay())
         {
-            if (player.isUncontrol)//受限移动时候的移动
+            if (player.GetIsUncontrol())//受限移动时候的移动
             {
                 //
             }
@@ -106,14 +106,14 @@ public class NewPlayerUmbrellaState : NewPlayerState, IMove_horizontally, IFall_
     {
         base.CurrentStateCandoUpdate();
         player.WhetherCanJumpOrWallJump();
-        player.WhetherCanAttack();
+        player.WhetherCanItemUse1();
     }
     private void UmbrellaEnter()
     {
-        player.horizontalMoveSpeedAccleration = player.umbrellaMoveAccelaration;
-        player.horizontalmoveThresholdSpeed = player.umbrellaMoveThresholdSpeed;
-        player.horizontalMoveSpeedMax = player.umbrellaMoveSpeedMax;
-        player.verticalFallSpeedMax = player.umbrellaFallSpeedMax;
+        //player.horizontalMoveSpeedAccleration = player.umbrellaMoveAccelaration;
+        //player.horizontalmoveThresholdSpeed = player.umbrellaMoveThresholdSpeed;
+        //player.horizontalMoveSpeedMax = player.umbrellaMoveSpeedMax;
+        //player.verticalFallSpeedMax = player.umbrellaFallSpeedMax;
     }
 
 

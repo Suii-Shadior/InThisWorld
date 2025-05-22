@@ -8,7 +8,7 @@ using UnityEngine;
 //[RequireComponent(typeof(Rigidbody2D),typeof(CompositeCollider2D))]
 public class FloorController : MonoBehaviour
 {
-
+    [Header("————使用说明————\n1、选择适用的地板类型，即thisFloorType")]
 
     #region 组件
     private Animator thisAnim;
@@ -19,7 +19,7 @@ public class FloorController : MonoBehaviour
 
 
     [Header("Floor Setting")]
-    public floorType ThisFloorType;
+    public floorType thisFloorType;
     [Header("Floor Info")]
     private NewPlayerController thePlayer;
 
@@ -40,7 +40,7 @@ public class FloorController : MonoBehaviour
     public float breakDuration2;
     private void Awake()
     {
-        switch (ThisFloorType)
+        switch (thisFloorType)
         {
             case floorType.passable_piper:
                 Floor_PiperAwake();
@@ -68,7 +68,7 @@ public class FloorController : MonoBehaviour
 
     private void Start()
     {
-        switch (ThisFloorType) 
+        switch (thisFloorType) 
         {
             case floorType.passable_piper:
                 Floor_PiperStart();
@@ -116,7 +116,7 @@ public class FloorController : MonoBehaviour
 
     public void Floor_Enter()
     {
-        switch (ThisFloorType)
+        switch (thisFloorType)
         {
             case floorType.passable_piper:
                 Passable_PiperEnter();
@@ -145,7 +145,7 @@ public class FloorController : MonoBehaviour
     }
     public void Floor_Stay()
     {
-        switch (ThisFloorType)
+        switch (thisFloorType)
         {
             case floorType.passable_piper:
                 Passable_PiperStay();
@@ -183,11 +183,11 @@ public class FloorController : MonoBehaviour
         }
     }
 
-
+    #region 小方法与外部调用
 
     private IEnumerator Pipe()
     {
-        thePlayer.Unact(passDuration);
+        thePlayer.Unact();
         thisCol.isTrigger = true;
         //thePlayer.transform.position = thePipeLocation.position;
         Debug.Log("进入");
@@ -201,7 +201,7 @@ public class FloorController : MonoBehaviour
         //    yield return new WaitForSeconds(Time.deltaTime);
         //}
         yield return new WaitForSeconds(passDuration);
-
+        thePlayer.CanAct();
         Debug.Log("退出");
     }
 
@@ -227,4 +227,5 @@ public class FloorController : MonoBehaviour
             thisCol.isTrigger = false;
         }
     }
+    #endregion
 }

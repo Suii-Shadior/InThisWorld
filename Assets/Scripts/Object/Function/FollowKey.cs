@@ -4,19 +4,25 @@ using SubInteractiveEnum;
 
 public class FollowKey : MonoBehaviour
 {
+    #region 组件
     private Animator thisAnim;
+    #endregion
+    #region 变量
+    [Header("State Related")]
     public bool isFollowing;
     public bool isOpening;
     public bool hasOpened;
 
+    [Header("Move Related")]
     public Transform theDestination;
     private NewPlayerController thePlayer;
     private DoorController theDoor;
     public Vector2 destinalOffset;
     public float moveRatio;
-
+    #endregion
+    #region 常量
     private const string USEDSTR = "isUsed";
-
+    #endregion
 
     private void Awake()
     {

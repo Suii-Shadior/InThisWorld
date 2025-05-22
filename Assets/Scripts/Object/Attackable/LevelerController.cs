@@ -1,15 +1,14 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
-using UnityEngine;
+using AttackableInterfaces;
 using InteractiveAndInteractableEnums;
+using IPhysicalAttackableFactoryRelated;
+using UnityEngine;
 
 public class LevelerController : MonoBehaviour
 {
     #region 组件
 
     private Animator thisAnim;
-    private CombineInteractableManager theCombineManager;
+    public CombineInteractableManager theCombineManager { get; private set; }
     #endregion
 
 
@@ -18,16 +17,20 @@ public class LevelerController : MonoBehaviour
     [Space(3)]
     #region 变量
     [Header("Leveler Setting")]
+    public AttackableConfigSO attackConfigSO;
     public levelerType thisLevelerType;
+    public LevelerFactory thisFactory;
+
     [Header("Leveler Info")]
     public bool isInteracted;
     public bool canBeInteracted;
+    private IPhysicalAttackable currentLeveler;
 
     [Header("Rotater Related")]//涉及对象为定向旋转平台，包含顺时针旋转、逆时针旋转、停止三种状态
     [Header("2、添加旋转平台对象，即rotatePlatforms\n3、添加复位时间")]
     public PlatformController[] rotatePlatforms;
     private float canBeInteractedCounter;
-    public float canBeInteractedDuration;
+
 
 
     [Header("Elevator Related")]//涉及对象为电梯，包含上升、下降、停止三种状态
@@ -36,10 +39,7 @@ public class LevelerController : MonoBehaviour
 
 
 
-    [Header("Animator Related")]
-    private const string ISINTERACTINGSTR = "isInteracting";
-    private const string ISALTINTERACTINGSTR = "isAltInteracting";
-    private const string CANBEINTERACTED = "canBeInteracted";
+
     #endregion
 
 
@@ -48,6 +48,20 @@ public class LevelerController : MonoBehaviour
     {
         thisAnim = GetComponent<Animator>();
         theCombineManager = GetComponentInParent<CombineInteractableManager>();//获取父类主要是实现多对象之间的同步
+        switch (thisLevelerType)
+        {
+            case levelerType.attackable_rotater:
+                thisFactory = new RotaterFactory();
+                break;
+            case levelerType.attackable_elevator:
+
+                thisFactory = new ElevatorFactory();
+                break;
+            default:
+                break;
+
+        }
+        currentLeveler = thisFactory?.CreateLeveler(this);
     }
     private void Start()//Leveler起始只在初始状态，不用进行任何初始化
     {
@@ -70,7 +84,7 @@ public class LevelerController : MonoBehaviour
             else
             {
                 canBeInteracted = true;
-                thisAnim.SetBool(CANBEINTERACTED, true);
+                thisAnim.SetBool(attackConfigSO.Leveler_CANBEINTERACTED, true);
             }
         }
         else
@@ -84,118 +98,39 @@ public class LevelerController : MonoBehaviour
     #region Interact相关
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.GetComponent<AttackArea>())
+        if (other.TryGetComponent<AttackArea>(out AttackArea attackArea))
         {
-            switch (thisLevelerType) 
-            {
-                case levelerType.attackable_rotater:
-                    Attackable_RotaterInteract(other.GetComponent<AttackArea>());//根据攻击的方向区分旋转方向
-                    break;
-                case levelerType.attackable_elevator:
-                    Attackable_ElevatorInteract(other.GetComponent<AttackArea>());//根据攻击的方向区分升降
-                    break;
-            }
+            currentLeveler?.BePhysicalAttacked(attackArea);
 
         }
     }
 
-    private void Attackable_RotaterInteract(AttackArea _theAttack)
-    {
-        if (canBeInteracted)
-        {
-            if (_theAttack.thePlayer.transform.position.x > transform.position.x)
-            {
-                //Debug.Log("左手一个慢动作");
-                ClockwiseRotate();
-            }
-            else
-            {
-                //Debug.Log("右手慢动作重播");
-                AntiClockwiseRotate();
-            }
-        }
-    }
-    private void Attackable_ElevatorInteract(AttackArea _theAttack)
-    {
-        if (canBeInteracted)
-        {
-            if (_theAttack.thePlayer.transform.position.x > transform.position.x)
-            {
-                //Debug.Log("左手一个慢动作");
-                ElevatorUpwardMove();
-            }
-            else
-            {
-                //Debug.Log("右手慢动作重播");
-                ElevaterDownwardMove();
-            }
-        }
-    }
+
 
     #endregion
 
 
     #region 小方法与外部调用
-    private void ClockwiseRotate()
-    {
-        foreach(PlatformController rotatePlatform in rotatePlatforms)
-        {
-            rotatePlatform.ClockwiseRotate();
-        }
-        theCombineManager.LevelersInteract();
-    }
-    private void AntiClockwiseRotate()
-    {
-        foreach (PlatformController rotatePlatform in rotatePlatforms)
-        {
-            rotatePlatform.AntiClockwiseRotate();
-        }
-        theCombineManager.LevelersAltInteract();
-    }
-    private void ElevatorUpwardMove()
-    {
-        if(Vector2.Distance(elevatorPlatform.theNowPoint.position, elevatorPlatform.theEndPoint.position) < .01F)
-        {
-            //Debug.Log("最上面了");
-        }
-        else if (Vector2.Distance(elevatorPlatform.theNowPoint.position, elevatorPlatform.theRotatePovit_ElevatorPoint.position) < .01F)
-        {
-            elevatorPlatform.theDestinalPoint.position = elevatorPlatform.theEndPoint.position;
-        }
-        else if (Vector2.Distance(elevatorPlatform.theNowPoint.position, elevatorPlatform.theStartPoint.position) < .01F)
-        {
-            elevatorPlatform.theDestinalPoint.position = elevatorPlatform.theRotatePovit_ElevatorPoint.position;
-        }
-    }
-    private void ElevaterDownwardMove()
-    {
-        if (Vector2.Distance(elevatorPlatform.theNowPoint.position, elevatorPlatform.theEndPoint.position) < .01F)
-        {
-            elevatorPlatform.theDestinalPoint.position = elevatorPlatform.theRotatePovit_ElevatorPoint.position;
-        }
-        else if (Vector2.Distance(elevatorPlatform.theNowPoint.position, elevatorPlatform.theRotatePovit_ElevatorPoint.position) < .01F)
-        {
-            elevatorPlatform.theDestinalPoint.position = elevatorPlatform.theStartPoint.position;
-        }
-        else if (Vector2.Distance(elevatorPlatform.theNowPoint.position, elevatorPlatform.theStartPoint.position) < .01F)
-        {
-            Debug.Log("最下面了");
-        }
-    }
+
+
     public void JustInteract()
     {
-        thisAnim.SetTrigger(ISINTERACTINGSTR);
-        thisAnim.SetBool(CANBEINTERACTED, false);
-        canBeInteracted = false;
-        canBeInteractedCounter = canBeInteractedDuration;
+        thisAnim.SetTrigger(attackConfigSO.Leveler_ISINTERACTINGSTR);
+        SetInteracted();
     }
 
     public void JustAltInteract()
     {
-        thisAnim.SetBool(CANBEINTERACTED, false);
-        thisAnim.SetTrigger(ISALTINTERACTINGSTR);
-        canBeInteracted = false;
-        canBeInteractedCounter = canBeInteractedDuration;
+        thisAnim.SetBool(attackConfigSO.Leveler_CANBEINTERACTED, false);
+        SetInteracted();
     }
+
+    private void SetInteracted()
+    {
+        thisAnim.SetTrigger(attackConfigSO.Leveler_ISALTINTERACTINGSTR);
+        canBeInteracted = false;
+        canBeInteractedCounter = attackConfigSO.Leveler_canBeInteractedDuration;
+    }
+
     #endregion
 }

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using InteractiveAndInteractableEnums;
+using PlayerInterfaces;
 
 public class SwitchController : MonoBehaviour,IInteract
 {
@@ -16,6 +17,7 @@ public class SwitchController : MonoBehaviour,IInteract
     [Space(3)]
     #region 变量
     [Header("Swtich Setting")]
+    public InteractableConfigSO interactableConfigSO;
     public switchTpye thisSwitchType;
     public bool isPrimarySwitch;//通过此项来判断用于初始化的对象范围，避免重复及冲突
 
@@ -25,7 +27,7 @@ public class SwitchController : MonoBehaviour,IInteract
 
     [Header("Alternative Related")]//涉及对象只有开关对应的两种状态逻辑
     [Header("3、添加复位时间，即canTriggeredDuration\n4、添加二择开关状态相应对象")]
-    public float canTriggeredDuration;
+
     private float canTriggeredCounter;
     public PlatformController[] triggeredPlatforms;
     public PlatformController[] unTriggeredPlatforms;
@@ -35,11 +37,8 @@ public class SwitchController : MonoBehaviour,IInteract
     public Transform thisElevatorArrivalPoint;
     public PlatformController theElevator;
 
-    [Header("Animator Related")]
-    private const string TRIGGEREDSTR = "isTriggered";
-    private const string UNTRIGGEREDSTR = "isUntriggered";
-    private const string TRIGGERINGSTR = "isTriggering";
-    private const string UNTRIGGERINGSTR = "isUntriggering";
+
+
 
     #endregion
 
@@ -117,17 +116,17 @@ public class SwitchController : MonoBehaviour,IInteract
     {
         if (isTriggered)
         {
-            thisAnim.SetBool(TRIGGEREDSTR, true);
+            thisAnim.SetBool(interactableConfigSO.Switch_TRIGGEREDSTR, true);
         }
         else
         {
-            thisAnim.SetBool(UNTRIGGEREDSTR, true);
+            thisAnim.SetBool(interactableConfigSO.Switch_UNTRIGGEREDSTR, true);
         }
     }
 
     private void AutoResetable_ElevatorStart()
     {
-        thisAnim.SetBool(UNTRIGGEREDSTR, true);
+        thisAnim.SetBool(interactableConfigSO.Switch_UNTRIGGEREDSTR, true);
     }
 
     #endregion
@@ -169,7 +168,7 @@ public class SwitchController : MonoBehaviour,IInteract
 
     private void AutoResetable_ElevatorUpdate()
     {
-        if (isPrimarySwitch && theElevator.WhetherHasArrived())
+        if (isPrimarySwitch && theElevator.hasArrived)
         {
             theCombineManager.SwitchReset();
         }
@@ -209,7 +208,7 @@ public class SwitchController : MonoBehaviour,IInteract
     {
         canTriggered = true;
         isTriggered = false;
-        thisAnim.SetTrigger(UNTRIGGERINGSTR);
+        thisAnim.SetTrigger(interactableConfigSO.Switch_UNTRIGGERINGSTR);
     }
     public void Interact()//根据不同类型进行不同的交互内容
     {
@@ -231,24 +230,24 @@ public class SwitchController : MonoBehaviour,IInteract
             {
                 foreach (PlatformController _triggeredPlatform in triggeredPlatforms)
                 {
-                    _triggeredPlatform.HideThisPlatform();
+                    _triggeredPlatform.currentPlatform.Interact1();
                 }
                 foreach (PlatformController _triggeredPlatform in unTriggeredPlatforms)
                 {
-                    _triggeredPlatform.ReappearThisPlatform();
+                    _triggeredPlatform.currentPlatform.Interact2();
                 }
 
             }
             else
             {
   
-                foreach (PlatformController triggeredPlatform in triggeredPlatforms)
+                foreach (PlatformController _triggeredPlatform in triggeredPlatforms)
                 {
-                    triggeredPlatform.ReappearThisPlatform();
+                    _triggeredPlatform.currentPlatform.Interact2();
                 }
-                foreach (PlatformController triggeredPlatform in unTriggeredPlatforms)
+                foreach (PlatformController _triggeredPlatform in unTriggeredPlatforms)
                 {
-                    triggeredPlatform.HideThisPlatform();
+                    _triggeredPlatform.currentPlatform.Interact1();
                 }
 
             }
@@ -295,22 +294,22 @@ public class SwitchController : MonoBehaviour,IInteract
         if (isTriggered)
         {
             isTriggered = false;
-            thisAnim.SetTrigger(UNTRIGGERINGSTR);
+            thisAnim.SetTrigger(interactableConfigSO.Switch_UNTRIGGERINGSTR);
         }
         else
         {
             isTriggered = true;
-            thisAnim.SetTrigger(TRIGGERINGSTR);
+            thisAnim.SetTrigger(interactableConfigSO.Switch_TRIGGERINGSTR);
         }
         canTriggered = false;
-        canTriggeredCounter = canTriggeredDuration;
+        canTriggeredCounter = interactableConfigSO.canTriggeredDuration;
     }
 
     private void AutoResetable_ElevatorJustTrigger()
     {
         isTriggered = true;
         canTriggered = false;
-        thisAnim.SetTrigger(TRIGGERINGSTR);
+        thisAnim.SetTrigger(interactableConfigSO.Switch_TRIGGERINGSTR);
 
     }
 

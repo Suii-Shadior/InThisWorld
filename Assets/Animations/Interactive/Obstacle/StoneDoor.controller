@@ -64,13 +64,13 @@ AnimatorController:
   m_Name: StoneDoor
   serializedVersion: 5
   m_AnimatorParameters:
-  - m_Name: hasAttacked
+  - m_Name: isTriggered
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 9100000}
-  - m_Name: isUnattacked
+  - m_Name: isUntriggered
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
@@ -130,7 +130,7 @@ AnimatorStateTransition:
   m_Name: 
   m_Conditions:
   - m_ConditionMode: 2
-    m_ConditionEvent: hasAttacked
+    m_ConditionEvent: isTriggered
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -3129065821548276193}
@@ -180,7 +180,7 @@ AnimatorStateTransition:
   m_Name: 
   m_Conditions:
   - m_ConditionMode: 1
-    m_ConditionEvent: hasAttacked
+    m_ConditionEvent: isTriggered
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 593979487040821760}
@@ -233,7 +233,7 @@ AnimatorStateTransition:
   m_Name: 
   m_Conditions:
   - m_ConditionMode: 1
-    m_ConditionEvent: isUnattacked
+    m_ConditionEvent: isUntriggered
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -3129065821548276193}
@@ -258,7 +258,7 @@ AnimatorStateTransition:
   m_Name: 
   m_Conditions:
   - m_ConditionMode: 1
-    m_ConditionEvent: hasAttacked
+    m_ConditionEvent: isTriggered
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 593979487040821760}
@@ -291,10 +291,10 @@ AnimatorStateMachine:
     m_Position: {x: 440, y: 60, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -3129065821548276193}
-    m_Position: {x: 500, y: 280, z: 0}
+    m_Position: {x: 490, y: 310, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 5447983510411371994}
-    m_Position: {x: 196.2453, y: 260.6195, z: 0}
+    m_Position: {x: 130, y: 180, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions: []
   m_EntryTransitions: []

@@ -13,6 +13,9 @@ public class ControllerManager : MonoBehaviour
     public AudioController theBGMPlayer;
     public EventController theEvent;
     public DialogeController theDC;
+    public PuzzleController thePC;
+    public DataController theData;
+    
     private void Awake()
     {
         if (instance == null)

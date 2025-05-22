@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 1147879565510094087}
   - component: {fileID: 8807256267740492860}
   - component: {fileID: 6567228780781610302}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Blocker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -155,12 +155,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9068423353ee3fd4390e6335aa506044, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  beAttackedDuration: 0.2
+  attackConfigSO: {fileID: 11400000, guid: f4c34eca9bdc90449a40d583e026bc1a, type: 2}
+  thisBlockerType: 0
   numToTriggered: 3
+  isTriggered: 0
   needToTriggered: 0
   hasAttacked: 0
-  attackVec2: {x: 0, y: 0}
+  canBeAttackableCounter: 0
+  canBeAttackedVec2: {x: 0, y: 0}
   canAttackDir: 1
+  thisBlockerSaveData:
+    SaveableID: 
+    isTriggered: 0
+    needToTriggered: 0
 --- !u!1 &4250336543168911654
 GameObject:
   m_ObjectHideFlags: 0

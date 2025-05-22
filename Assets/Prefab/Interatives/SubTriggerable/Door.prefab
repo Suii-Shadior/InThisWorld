@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 4449651393177559440}
   - component: {fileID: 2725455361436402140}
   - component: {fileID: 3626537395497114743}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Door
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -101,10 +101,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d8c073abc0405344ac9707a6f8b8ee8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  thisDoorSaveData:
+    SaveableID: 
+    isOpened: 0
+    needToOpen: 0
   thisDoorType: 2
   isOpened: 0
   Openers: []
   needToOpen: 1
+  localSubscriberChannel: 0
 --- !u!95 &4449651393177559440
 Animator:
   serializedVersion: 5

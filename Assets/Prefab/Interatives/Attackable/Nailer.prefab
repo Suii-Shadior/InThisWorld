@@ -113,11 +113,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e138abdfea27fa84fb6ce261df96f046, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  beAttackedDuration: 0.1
-  numToTriggered: 1
-  needToTriggered: 0
-  hasAttacked: 0
-  attackVec2: {x: 0, y: 0}
+  attackConfigSO: {fileID: 11400000, guid: f4c34eca9bdc90449a40d583e026bc1a, type: 2}
+  thisNailerType: 0
+  thisNailerSaveData:
+    SaveableID: 
+    isTriggered: 0
+  isTriggered: 0
   theOnewayPlatform: {fileID: 0}
 --- !u!1 &7793223349398718761
 GameObject:

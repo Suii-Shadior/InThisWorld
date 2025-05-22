@@ -1,9 +1,9 @@
-using AttackInterfaces;
+using AttackableInterfaces;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ShoterBulletController : MonoBehaviour,IPhysicalAttack
+public class ShoterBulletController : MonoBehaviour, IPhysicalAttackable
 {
     //private Animator thisAnim;
     private Collider2D thisCol;
@@ -55,10 +55,7 @@ public class ShoterBulletController : MonoBehaviour,IPhysicalAttack
 
     public void BePhysicalAttacked()
     {
-        isDestroyed = true;
-        //thisAnim.SetBool(DESTROYEDSTR, true);
-        //thisAnim.SetBool(MOVESTR, false);
-        this.gameObject.SetActive(false);
+
     }
 
 
@@ -67,5 +64,14 @@ public class ShoterBulletController : MonoBehaviour,IPhysicalAttack
         isDestroyed = false;
         this.gameObject.SetActive(true);
 
+    }
+
+    public void BePhysicalAttacked(AttackArea attackArea)
+    {
+        //根据被击打的方向设置被打动画方向
+        isDestroyed = true;
+        //thisAnim.SetBool(DESTROYEDSTR, true);
+        //thisAnim.SetBool(MOVESTR, false);
+        this.gameObject.SetActive(false);
     }
 }

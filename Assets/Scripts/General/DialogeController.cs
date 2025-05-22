@@ -49,8 +49,7 @@ public class DialogeController : MonoBehaviour
 
     private void Update()
     {
-        if (isDialogue && !isPrinting && autoNextSentenceCounter > 0) autoNextSentenceCounter -= Time.deltaTime;
-        else if (isDialogue && !isPrinting && autoNextSentenceCounter < 0) theInput.DialoguingInput();
+
     }
 
 
@@ -62,7 +61,6 @@ public class DialogeController : MonoBehaviour
         GetTextFromFile(currentFile);
         printingIndex = 0;
         currentText = textList[printingIndex];
-        theUI.TurnOnDialogCanvas();
         Time.timeScale = 0.1f;
         printGap = 0.01f;
         autoNextSentenceCounter = autoNextSentenceDuration;
@@ -220,7 +218,7 @@ public class DialogeController : MonoBehaviour
         printGap = 0.2f;
         autoNextSentenceDuration = .1f;
         isDialogue = false;
-        theUI.TurnOffDialogCanvas();
+
     }
 
 }

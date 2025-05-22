@@ -47,7 +47,13 @@ public class OnewayPlatform : MonoBehaviour
     }
     void Start()
     {
+        SceneLoadSetting_Related();
 
+    }
+
+    #region 初始化相关
+    private void SceneLoadSetting_Related()
+    {
         switch (thisOnewayPlatformType)
         {
             case OnewayPlatformType.static_platform:
@@ -56,11 +62,9 @@ public class OnewayPlatform : MonoBehaviour
             case OnewayPlatformType.triggerable_platform:
                 Triggerable_Start();
                 break;
-            
+
         }
     }
-
-    #region 初始化相关
     private void Static_Start()
     {
         thisAnim.SetBool(UNCHANGEDSTR, true);
@@ -71,8 +75,8 @@ public class OnewayPlatform : MonoBehaviour
     {
         if (hasTriggered)
         {
-            thisAnim.SetBool(HASCHANGEDSTR, true);
-            theTriggeringLength = theTriggeredLength;
+            //thisAnim.SetBool(HASCHANGEDSTR, true);
+            theTriggeringLength = isLefttward?-theTriggeredLength: theTriggeredLength;
             ChangeLength();
         }
         else
@@ -83,6 +87,7 @@ public class OnewayPlatform : MonoBehaviour
             ChangeLength();
         }
     }
+
 
     #endregion
     private void Update()

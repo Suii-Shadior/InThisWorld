@@ -62,6 +62,7 @@ public class PlatformUnit : MonoBehaviour
     #endregion
 
     #region 外部调用
+
     public void Hide()//隐藏，玩家不能再踩上去
     {
         thisAnim.SetTrigger(HidingStr);

@@ -21,8 +21,8 @@ public class AudioController : MonoBehaviour
     }
     void Start()
     {
-        NormalBGM();
-        BGMPlayer.Play();
+        //NormalBGM();
+        //BGMPlayer.Play();
     }
 
     // Update is called once per frame
@@ -42,54 +42,7 @@ public class AudioController : MonoBehaviour
     private void NormalBGM()
     {
 
-        if (theLevel.currentSceneName == "MainMenu")//
-        {
-            currentChip = levelBGM[0];
-            BGMPlayer.clip = currentChip;
 
-        }
-        else 
-        switch (theLevel.currentSceneName)
-        {
-            case "Level1":
-                currentChip = levelBGM[2];
-                BGMPlayer.clip = currentChip;
-                break;
-            case "Level2":
-                currentChip = levelBGM[2];
-                BGMPlayer.clip = currentChip;
-                break;
-            case "Level3":
-                currentChip = levelBGM[2];
-                BGMPlayer.clip = currentChip;
-                break;
-            case "Level4":
-                currentChip = levelBGM[3];
-                BGMPlayer.clip = currentChip;
-                break;
-            case "Level5":
-                currentChip = levelBGM[3];
-                BGMPlayer.clip = currentChip;
-                break;
-            case "Level6":
-                currentChip = levelBGM[4];
-                BGMPlayer.clip = currentChip;
-                break;
-            case "Level7":
-                currentChip = levelBGM[4];
-                BGMPlayer.clip = currentChip;
-                break;
-            case "Level8":
-                currentChip = levelBGM[5];
-                BGMPlayer.clip = currentChip;
-                break;
-            case "Level9":
-                currentChip = levelBGM[6];
-                BGMPlayer.clip = currentChip;
-                break;
-            default:
-                break;
-        }
     }
     public void NonBossBGM()
     {

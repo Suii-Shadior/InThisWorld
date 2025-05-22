@@ -46,7 +46,7 @@ public class NewPlayerApexState : NewPlayerState
         //才跳跃，操作逻辑上来看不可能马上又能跳跃的，所以并不刷新操作相关的脱台跳时间
         //但是有可能吃到一些道具，使得实现可以无限跳跃，所以依旧要判断是否能跳跃
         player.WhetherCanJumpOrWallJump();
-        player.canAttack = true;
+        player.canItemUse1 = true;
 
     }
 
@@ -60,19 +60,17 @@ public class NewPlayerApexState : NewPlayerState
     private void ApexEnter()
     {
         player.ClearYVelocity();
-        player.releaseDuringRising = true;
-        player.isPastApexThreshold = false;
-        player.apexCounter = player.apexDuration;
-        player.horizontalmoveThresholdSpeed = player.airmoveThresholdSpeed;
-        player.horizontalMoveSpeedMax = player.airmoveSpeedMax;
-        player.verticalFallSpeedMax = player.airFallSpeedMax;
+       // player.releaseDuringRising = true;
+        //player.isPastApexThreshold = false;
+        //player.apexCounter = player.apexDuration;
+
 
     }
     private void HorizontalMove()
     {
-        if (player.isGameplay)
+        if (player.GetIsGamePlay())
         {
-            if (!player.isUncontrol)
+            if (!player.GetIsUncontrol())
             {
                 //
             }
@@ -146,18 +144,18 @@ public class NewPlayerApexState : NewPlayerState
         {
             player.ChangeToIdleState();
         }
-        else if(player.apexCounter<0)
-        {
-            player.ChangeToFallState();
-        }
+        //else if(player.apexCounter<0)
+        //{
+        //    player.ChangeToFallState();
+        //}
 
     }
 
     private void ApexCounter()
     {
-        if (player.apexCounter > 0)
-        {
-            player.apexCounter -= Time.fixedDeltaTime;
-        }
+        //if (player.apexCounter > 0)
+        //{
+        //    player.apexCounter -= Time.fixedDeltaTime;
+        //}
     }
 }

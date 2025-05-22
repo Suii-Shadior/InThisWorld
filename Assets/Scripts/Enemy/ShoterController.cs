@@ -124,9 +124,9 @@ public class ShoterController : EnemyBase
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.GetComponent<AttackArea>())
+        if (other.TryGetComponent<AttackArea>(out AttackArea attackArea))
         {
-            BePhysicalAttacked();
+            BePhysicalAttacked(attackArea);
         }
     }
     private void OnTriggerExit2D(Collider2D other)
@@ -134,7 +134,7 @@ public class ShoterController : EnemyBase
 
     }
 
-    public override void BePhysicalAttacked()
+    public override void BePhysicalAttacked(AttackArea attackArea)
     {
         if (--hpCur == 0)
         {

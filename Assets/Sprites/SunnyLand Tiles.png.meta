@@ -1032,7 +1032,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: sunnyland_tiles_relaid_Padded_38
+      name: savepoint
       rect:
         serializedVersion: 2
         x: 1
@@ -1519,7 +1519,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: sunnyland_tiles_relaid_Padded_63
+      name: pressone
       rect:
         serializedVersion: 2
         x: 145
@@ -2437,6 +2437,8 @@ TextureImporter:
       Nailer: 3481017475304765826
       OnewayPlatform: -2568288569716644289
       big block: 5474732567577085688
+      pressone: 7133049196151067418
+      savepoint: 4762811109085248275
       stone: 2391903256158459113
       sunnyland_tiles_relaid_Padded_0: 3287848783686573333
       sunnyland_tiles_relaid_Padded_1: -5463897620222462305
@@ -2473,7 +2475,6 @@ TextureImporter:
       sunnyland_tiles_relaid_Padded_33: -4051624116929229557
       sunnyland_tiles_relaid_Padded_34: -1578002637858680105
       sunnyland_tiles_relaid_Padded_37: 4099992945786891730
-      sunnyland_tiles_relaid_Padded_38: 4762811109085248275
       sunnyland_tiles_relaid_Padded_39: -819770478092454269
       sunnyland_tiles_relaid_Padded_40: -6517990167705665613
       sunnyland_tiles_relaid_Padded_41: -3549992386819286772
@@ -2498,7 +2499,6 @@ TextureImporter:
       sunnyland_tiles_relaid_Padded_60: -6399830510141787367
       sunnyland_tiles_relaid_Padded_61: -4424641820440881072
       sunnyland_tiles_relaid_Padded_62: -7685324929753469293
-      sunnyland_tiles_relaid_Padded_63: 7133049196151067418
       sunnyland_tiles_relaid_Padded_64: -1735318775901381991
       sunnyland_tiles_relaid_Padded_65: 3462851081454962194
       sunnyland_tiles_relaid_Padded_66: -1355769806141176144

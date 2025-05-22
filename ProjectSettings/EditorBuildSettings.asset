@@ -6,6 +6,87 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: 2cda990e2423bbf4892e6590ba056729
+    path: Assets/Scenes/PersistentGameplayObjects.unity
+    guid: 4522c0bab13ddaa4fab1c84cd7b09272
+  - enabled: 1
+    path: Assets/Scenes/SideA_P0-R1.unity
+    guid: 54da331c722eada47a57b9d131a5ca85
+  - enabled: 1
+    path: Assets/Scenes/SideA_P0-R2.unity
+    guid: 44a857d3382322245ab8aaf16deb361b
+  - enabled: 1
+    path: Assets/Scenes/SideA_P1-R1.unity
+    guid: fd6d7e352a11c2a48b64e5be27699f9b
+  - enabled: 1
+    path: Assets/Scenes/SideA_P1-R2.unity
+    guid: 766f5c2fe33c3974ca344168dd33e2e4
+  - enabled: 1
+    path: Assets/Scenes/SideA_P1-R3.unity
+    guid: a7db09b15b487a244a06f3dfafd98342
+  - enabled: 1
+    path: Assets/Scenes/SideA_P1-R4.unity
+    guid: d288d578351a89e48a4c5dbf9194df39
+  - enabled: 1
+    path: Assets/Scenes/SideA_P1-R5.unity
+    guid: 7855c19efd9d831458037ee2fc321d0a
+  - enabled: 1
+    path: Assets/Scenes/SideA_P2-R1.unity
+    guid: 5ef17e1031aa7f248aca624ec195eb7a
+  - enabled: 1
+    path: Assets/Scenes/SideA_P2-R2.unity
+    guid: c11ac46ab357da742ae29f188fc09f9f
+  - enabled: 1
+    path: Assets/Scenes/SideA_P2-R3.unity
+    guid: c53aa51f2ef3be64a85043bc7511991f
+  - enabled: 1
+    path: Assets/Scenes/SideA_P2-R4-0.unity
+    guid: 32df9bcd63473a543a2d6873c7e31142
+  - enabled: 1
+    path: Assets/Scenes/SideA_P2-R4-1.unity
+    guid: 9c2411e7687e18948a0281f76292d424
+  - enabled: 1
+    path: Assets/Scenes/SideA_P2-R4-2.unity
+    guid: 0bda4e00db64f6249b6f1310e44b5669
+  - enabled: 1
+    path: Assets/Scenes/SideA_P2-R4-3.unity
+    guid: 47bb925d8be4f2d4ba15070c17cd1400
+  - enabled: 1
+    path: Assets/Scenes/SideA_P3-R1.unity
+    guid: c328264a00c0ef14caacb81a497cca64
+  - enabled: 1
+    path: Assets/Scenes/SideA_P3-R2.unity
+    guid: 6cf25760af5bb1d49a5b7637ed93674f
+  - enabled: 1
+    path: Assets/Scenes/SideA_P3-R3-0.unity
+    guid: 6cd4a652a33cc4f43ad22458faf0ce5d
+  - enabled: 1
+    path: Assets/Scenes/SideA_P3-R3-1.unity
+    guid: 974051112b37f3c479079c0e0048ab13
+  - enabled: 1
+    path: Assets/Scenes/SideA_P3-R3-2.unity
+    guid: bac84e2792ea180439295c71fa48e921
+  - enabled: 1
+    path: Assets/Scenes/SideA_P3-R3-3.unity
+    guid: cf844fe5ac689b54091dbc92969d9ea5
+  - enabled: 1
+    path: Assets/Scenes/SideA_P3-R3-4.unity
+    guid: dc17693ebef41db4c825b6645d18a7bc
+  - enabled: 1
+    path: Assets/Scenes/SideA_P3-R4.unity
+    guid: 295f6dcc1c9dbf2498b10d60b9e3354f
+  - enabled: 1
+    path: Assets/Scenes/SideA_P3-R5.unity
+    guid: 2781696e57745fe4db9f7b05564c6f40
+  - enabled: 1
+    path: Assets/Scenes/SideA_P3-R6-0.unity
+    guid: 6c6b2ec1da609fe47a2eadab96faa75d
+  - enabled: 1
+    path: Assets/Scenes/SideA_P3-R6-1.unity
+    guid: c9092defc5aaf814aa588f7fdacd9917
+  - enabled: 1
+    path: Assets/Scenes/SideA_P3-R6-2.unity
+    guid: 7aa175ada607a0e4285c4d5857f30feb
+  - enabled: 1
+    path: Assets/Scenes/SideA_P3-R6-3.unity
+    guid: acdc2662e49f8aa45a98220961ffac94
   m_configObjects: {}

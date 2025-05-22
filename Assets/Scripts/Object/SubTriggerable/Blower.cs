@@ -7,13 +7,13 @@ public class Blower : MonoBehaviour
 
     public bool isOperating;
     private Animator thisAnim;
-    private WindZone thisWindZone;
+    private WindArea thisWindZone;
     // Start is called before the first frame update
 
     private void Awake()
     {
         thisAnim = GetComponentInChildren<Animator>();
-        thisWindZone = GetComponentInChildren<WindZone>();
+        thisWindZone = GetComponentInChildren<WindArea>();
         //∂¡»°¥Êµµ
     }
     void Start()
