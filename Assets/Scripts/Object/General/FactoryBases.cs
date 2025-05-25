@@ -1,9 +1,9 @@
 using AttackableInterfaces;
 using PlayerInterfaces;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+
 using PlatformInterfaces;
+using InteractableInterface;
+using InteractiveInterface;
 
 namespace IPhysicalAttackableFactoryRelated
 {
@@ -23,14 +23,33 @@ namespace IPhysicalAttackableFactoryRelated
 }
 namespace InteractableFactoryRelated
 {
-    public abstract class HandlerFactory 
+    public abstract class SwitchFactory
+    {
+        public abstract ISwitch CreateSwitcher(SwitchController context);
+    }
+    
+    public abstract class HandlerFactory_Handler
     {
         public abstract IHandle CreateHandler(HandlerController context);
         
     }
-    
+
+    public abstract class FloorFactory
+    {
+        public abstract IFloor CreateFloor(FloorController context);
+    }
 
 }
+
+namespace InteractiveFactoryRelated 
+{
+    public abstract class OpenerFactory
+    {
+        public abstract IOpener CreateOpener(OpenerController context);
+    }
+}
+
+
 
 namespace PlatformFactoryRelated
 {

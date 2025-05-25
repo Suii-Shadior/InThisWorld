@@ -85,7 +85,6 @@ public class NewPlayerFallState : NewPlayerState, IFall_vertically, IMove_horizo
         base.CurrentStateCandoUpdate();
         player.WhetherCanJumpOrWallJump();
         player.WhetherCanItemUse1();
-        player.WhetherCanInteract();
 
     }
 

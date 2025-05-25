@@ -4,41 +4,35 @@ using UnityEditor.Animations;
 using UnityEngine;
 using InteractiveAndInteractableEnums;
 using StructForSaveData;
+using static UnityEngine.RuleTile.TilingRuleOutput;
+using InteractiveInterface;
+using OpenerFactoryRelated;
 
-public class OpenerController:MonoBehaviour,ISave<OpenerSaveData>
+public class OpenerController : MonoBehaviour, ISave<OpenerSaveData>
 {
     #region 组件
     private Animator thisAnim;
     private BoxCollider2D thisBoxCol;
     private EventController theEC;
+
     #endregion
     public OpenerSaveData thisOpenerSaveData;
     [Header("————使用说明————\n1、选择本脚本适用的开门器类型，thisOpenerType\n2、添加相应的门对象\n3、根据种类同进行设定，详情看对应Related")]
     [Space(3)]
 
     [Header("Opener Setting")]
+    public InteractiveConfigSO theInteractiveConfig;
     public openerType thisOpenerType;
     public DoorController theDoor;
     [Header("Opener Info")]
-
+    public IOpener currentOpener;
     public bool isPressed;
 
 
 
-    [Header("Button Related")]
-    public AnimatorController theButtonAnimator;
-    [Header("Debris Related")]
-    public AnimatorController theDebrisAnimator;
-    [Header("Key Related")]
-    public AnimatorController theKeyAnimator;
-    public GameObject theKeyPrefab;
 
 
-    [Header("Animator Related")]
-    private const string PRESSEDSTR = "isPressed";
-    private const string UNPRESSEDSTR = "isUnpressed";
-    private const string PRESSINGSTR = "isPressing";
-    private const string UNPRESSINGSTR = "isUnpressing";
+
 
 
 
@@ -46,48 +40,31 @@ public class OpenerController:MonoBehaviour,ISave<OpenerSaveData>
     {
         thisAnim = GetComponentInChildren<Animator>();
         thisBoxCol = GetComponent<BoxCollider2D>();
+        switch (thisOpenerType)
+        {
+            case openerType.trigerable_button:
+                currentOpener = new ButtonFactory().CreateOpener(this);
+                break;
+            case openerType.triggerable_debris:
+                currentOpener = new DebrisFactory().CreateOpener(this);
+                break;
+            case openerType.triggerable_key:
+                currentOpener = new KeyFactory().CreateOpener(this);
+                break;
+
+        }
+        currentOpener?.SceneLoad_Awake();
     }
     private void OnEnable()
     {
         theEC = ControllerManager.instance.theEvent;
-        SceneLoadSetting_Itself();
-        SceneLoadSetting_Relative();
-    }
-
-    private void SceneLoadSetting_Itself()
-    {
-        switch (thisOpenerType)
-        {
-            case openerType.trigerable_button:
-                Opener_Button_Itself();
-                break;
-            case openerType.triggerable_debris:
-                Opener_Debris_Itself();
-                break;
-            case openerType.triggerable_key:
-                Opener_Key_Itself();
-                break;
-
-        }
+        currentOpener?.SceneLoad_Enable();
     }
 
 
-    private void SceneLoadSetting_Relative()
-    {
-        switch (thisOpenerType)
-        {
-            case openerType.trigerable_button:
-                Opener_Button_Relative();
-                break;
-            case openerType.triggerable_debris:
-                Opener_Debris_Relative();
-                break;
-            case openerType.triggerable_key:
-                Opener_Key_Relative();
-                break;
 
-        }
-    }
+
+
 
 
 
@@ -95,124 +72,21 @@ public class OpenerController:MonoBehaviour,ISave<OpenerSaveData>
 
     private void Start()
     {
-        SceneLoadSetting_Related();
-    }
 
-
-    private void SceneLoadSetting_Related()
-    {
-        switch (thisOpenerType)
-        {
-            case openerType.trigerable_button:
-                Opener_Button_Related();
-                break;
-            case openerType.triggerable_debris:
-                Opener_Debris_Related();
-                break;
-            case openerType.triggerable_key:
-                Opener_Key_Related();
-                break;
-
-        }
-    }
-
-    #region 初始化相关
-
-    #region Opener_Button
-
-    private void Opener_Button_Itself()
-    {
-        thisAnim.runtimeAnimatorController = theButtonAnimator;
-        RegisterSaveable(GetComponent<ISaveable>());
-        isPressed = thisOpenerSaveData.isPressed;
-
-        if (isPressed)
-        {
-            thisBoxCol.enabled = false;
-            thisAnim.SetBool(PRESSEDSTR, true);
-        }
-        else
-        {
-            thisBoxCol.enabled = true;
-            thisAnim.SetBool(UNPRESSEDSTR, true);
-        }
-    }
-    private void Opener_Button_Relative()
-    {
-
-    }
-    private void Opener_Button_Related()
-    {
-
-    }
-    #endregion
-
-    #region Opener_Debris
-    private void Opener_Debris_Itself()
-    {
-        Debug.Log("运行了吗？");
-        thisAnim.runtimeAnimatorController = theDebrisAnimator;
-        thisBoxCol.enabled = true;
-        thisAnim.SetBool(UNPRESSEDSTR, true);
-    }
-    private void Opener_Debris_Relative()
-    {
-
-    }
-    private void Opener_Debris_Related()
-    {
-
+        currentOpener?.SceneLoad_Start();
     }
 
 
 
-    #endregion
 
-    #region Opener_Key
-    private void Opener_Key_Itself()
-    {
-        thisAnim.runtimeAnimatorController = theKeyAnimator;
-        RegisterSaveable(GetComponent<ISaveable>());
-        isPressed = thisOpenerSaveData.isPressed;
-        if (isPressed)
-        {
-            thisBoxCol.enabled = false;
-            thisAnim.SetBool(PRESSEDSTR, true);
-        }
-        else
-        {
-            thisBoxCol.enabled = true;
-            thisAnim.SetBool(UNPRESSEDSTR, true);
-        }
-    }
-    private void Opener_Key_Relative()
-    {
-
-    }
-
-    private void Opener_Key_Related()
-    {
-
-    }
-
-    #endregion
+ 
 
 
-    #endregion
+
 
     private void Update()
     {
-        switch (thisOpenerType)
-        {
-            case openerType.trigerable_button:
-                break;
-            case openerType.triggerable_debris:
-                break;
-            case openerType.triggerable_key:
 
-                break;
-
-        }
     }
 
 
@@ -220,76 +94,81 @@ public class OpenerController:MonoBehaviour,ISave<OpenerSaveData>
     {
 
         SaveDataSync();
-        theEC.SaveableUnregisterPublish(GetComponent<ISaveable>());
+        
+        ISaveable saveable = GetComponent<ISaveable>();
+        theEC.SaveableUnregisterPublish(saveable);
     }
 
     #region Press相关
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.GetComponent<NewPlayerController>())
+        if (other.TryGetComponent<NewPlayerController>(out NewPlayerController thePlayer))
         {
-            switch (thisOpenerType)
-            {
-                case openerType.trigerable_button:
-                    Opener_ButtonPress();
-                    break;
-                case openerType.triggerable_debris:
-                    Opener_DebrisPress();
-                    break;
-                case openerType.triggerable_key:
-                    Opener_KeyPress();
-                    break;
 
-            }
+            currentOpener?.BePressed();
         }
     }
 
-    private void Opener_DebrisPress()
+    private void OnTriggerStay2D(Collider2D other)
     {
-        if (!isPressed)
+        if (other.TryGetComponent<NewPlayerController>(out NewPlayerController thePlayer))
         {
-            isPressed = true;
-            thisAnim.SetTrigger(PRESSINGSTR);
-            theDoor.OpenTheDoor();
+
+            currentOpener?.BePressing();
         }
     }
-
-    private void Opener_ButtonPress()
+    private void OnTriggerExit2D(Collider2D collision)
     {
-        if (!isPressed)
-        {
-            isPressed = true;
-            thisAnim.SetTrigger(PRESSINGSTR);
-            theDoor.OpenTheDoor();
-        } 
-
+        currentOpener?.Unpressed();
     }
-
-    private void Opener_KeyPress()
-    {
-        if (!isPressed)
-        {
-            isPressed = true;
-            thisAnim.SetTrigger(PRESSINGSTR);
-            Instantiate(theKeyPrefab, transform.position, Quaternion.identity);
-        }
-    }
-
-
 
     #endregion
 
+    #region 调用方法
+    public void CreateFollowKey()
+    {
+        Instantiate(theInteractiveConfig.theKeyPrefab, transform.position, Quaternion.identity);
+    }
+   
 
-
+    public void ColOn()
+    {
+        thisBoxCol.enabled = true;
+    }
+    public void ColOff()
+    {
+        thisBoxCol.enabled = false;
+    }
     public void Opener_DebrisReset()
     {
         isPressed = false;
-        thisAnim.SetTrigger(UNPRESSINGSTR);
+        SetAnimUnpressed();
     }
 
+    public void SetAnimCont(AnimatorController theAnimCont)
+    {
+        thisAnim.runtimeAnimatorController = theAnimCont;
+    }
 
+    public void SetAnimUnpressed()
+    {
+        thisAnim.SetBool(theInteractiveConfig.Opener_UNPRESSEDSTR, true);
+    }
 
+    public void SetAnimPressed()
+    {
+        thisAnim.SetBool(theInteractiveConfig.Opener_PRESSEDSTR, true);
+    }
 
+    public void SetAnimPressing()
+    {
+        thisAnim.SetTrigger(theInteractiveConfig.Opener_PRESSINGSTR);
+    }
+    public void SetAnimUnpressing()
+    {
+
+    }
+    #endregion
 
     #region ISave接口相关
     public string GetISaveID()
@@ -314,16 +193,19 @@ public class OpenerController:MonoBehaviour,ISave<OpenerSaveData>
 
     public SaveData SaveDatalizeSpecificData()
     {
+        
         SaveData _savedata = new()
-        {
+        { 
             key = thisOpenerSaveData.SaveableID,
             type = TypeRegistry.GetDataTypeFromReverseDict(typeof(OpenerSaveData)),
             value = JsonUtility.ToJson(thisOpenerSaveData)
         };
+            
         return _savedata;
     }
     public void SaveDataSync()
     {
+        
         thisOpenerSaveData.isPressed = isPressed;
     }
     public OpenerSaveData GetSpecificDataByISaveable(SaveData _passedData)

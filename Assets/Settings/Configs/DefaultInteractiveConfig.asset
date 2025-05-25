@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af752443d8bc959459df85583522379a, type: 3}
+  m_Name: DefaultInteractiveConfig
+  m_EditorClassIdentifier: 
+  moveRatio: 0.02
+  destinalOffset: {x: -1, y: 1}
+  destroyDuration: 0
+  USEDSTR: isUsed
+  theButtonAnimator: {fileID: 9100000, guid: 68bde816d41aea541a80dd05d7b8504e, type: 2}
+  theDebrisAnimator: {fileID: 9100000, guid: a58ca04233142ff459b848483870956e, type: 2}
+  theKeyAnimator: {fileID: 9100000, guid: 7c5f494f4eaf77746871e9d795510209, type: 2}
+  theKeyPrefab: {fileID: 5302897593897727361, guid: c5aa071e397d3174daac0e1eee884121,
+    type: 3}
+  Opener_PRESSEDSTR: isPressed
+  Opener_UNPRESSEDSTR: isUnpressed
+  Opener_PRESSINGSTR: isPressing
+  Opener_UNPRESSINGSTR: isUnpressing

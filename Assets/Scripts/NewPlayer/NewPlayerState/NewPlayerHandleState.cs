@@ -72,7 +72,6 @@ public class NewPlayerHandleState : NewPlayerState
         player.RefreshCanJump();
         player.WhetherCanJumpOrWallJump();
         player.WhetherCanItemUse1();
-        player.WhetherCanInteract();
     }
 
     protected override void CurrentStateCandoUpdate()
@@ -90,7 +89,6 @@ public class NewPlayerHandleState : NewPlayerState
         player.RefreshCanJump();
         player.WhetherCanJumpOrWallJump();
         player.WhetherCanItemUse1();
-        player.WhetherCanInteract();
     }
 
 

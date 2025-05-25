@@ -58,7 +58,6 @@ public class NewPlayerRiseState : NewPlayerState, IMove_horizontally,IJump
         player.canVerticalMove = false;
         player.WhetherCanJumpOrWallJump();
         player.WhetherCanItemUse1();
-        player.WhetherCanInteract();
 
     }
 
@@ -109,7 +108,6 @@ public class NewPlayerRiseState : NewPlayerState, IMove_horizontally,IJump
         base.CurrentStateCandoUpdate();
         player.WhetherCanJumpOrWallJump();
         player.WhetherCanItemUse1();
-        player.WhetherCanInteract();
 
     }
     #region 接口实现

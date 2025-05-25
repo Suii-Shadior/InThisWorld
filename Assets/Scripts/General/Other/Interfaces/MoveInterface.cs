@@ -13,11 +13,7 @@ namespace PlayerInterfaces
     {
         void Jump();
     }
-    public interface IInteract
-    {
 
-        void Interact();
-    }
     public interface IHandle 
     {
         void HandlerUpdate();

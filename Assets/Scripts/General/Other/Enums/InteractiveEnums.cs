@@ -15,4 +15,11 @@ namespace InteractiveAndInteractableEnums
     public enum floorType {passable_piper,destroyable_breaker }
 
 
+
+
+
+
+
+    public enum followKeyState { waiting,following,openning}
+
 }

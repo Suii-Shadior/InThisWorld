@@ -113,6 +113,7 @@ public class EventController : MonoBehaviour
 
     public void SaveableUnregisterPublish(ISaveable _saveable)
     {
+        
         OnSaveableUnregister?.Invoke(_saveable);
     }
     #endregion

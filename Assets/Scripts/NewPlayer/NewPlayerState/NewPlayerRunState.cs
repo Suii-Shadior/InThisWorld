@@ -60,7 +60,6 @@ public class NewPlayerRunState : NewPlayerState, IMove_horizontally
         player.RefreshCanJump();
         player.WhetherCanJumpOrWallJump();
         player.WhetherCanItemUse1();
-        player.WhetherCanInteract();
     }
 
     protected override void CurrentStateCandoUpdate()
@@ -75,7 +74,6 @@ public class NewPlayerRunState : NewPlayerState, IMove_horizontally
         player.RefreshCanJump();
         player.WhetherCanJumpOrWallJump();
         player.WhetherCanItemUse1();
-        player.WhetherCanInteract();
 
     }
     private void MoveEnter()

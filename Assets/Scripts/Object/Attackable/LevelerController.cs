@@ -55,7 +55,7 @@ public class LevelerController : MonoBehaviour
                 break;
             case levelerType.attackable_elevator:
 
-                thisFactory = new ElevatorFactory();
+                thisFactory = new ElevatorCallerFactory();
                 break;
             default:
                 break;

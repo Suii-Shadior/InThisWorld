@@ -10,7 +10,7 @@ public class InputController : MonoBehaviour
 
     [Header("将方向键输入从案件注册剥离的原因：\n" +
         "1、方向键输入内容根据不同的情况下往往产生的逻辑作用不同，如果用事件则需要大量的标识进行辅助判断当前应该干什么，放在本脚本里面太过困难且容易变得可读性极差。\n" +
-        "2、故方向键的按键统一输入，在需要实现的脚本内进行预处理")]
+        "2、故方向键的按键统一输入，在需要实现的脚本内进行再处理")]
     #region 组件
     private ControllerManager thisCM;
     private Input1 theInput;
@@ -20,10 +20,12 @@ public class InputController : MonoBehaviour
     private DialogeController theDC;
     #endregion
 
-    /*
-     * 核心思路：
-     * 1、在核心场景加载时启用一个默认InputMap
-     * 2、通过按键或按钮使用启用停用函数在不同InputMap间进行切换
+    /* 本控制器主要职责：
+     * 1、区分输入地图，并定义切换逻辑
+     * 2、注册每个输入地图按键事件
+     * 
+     * 注意点：
+     * 1、关于案件逻辑切换往往是在特定按键或者事件触发，且同时涉及玩家、UI、按键、相机等多个内容。为了
      * 
      * 
      * 
@@ -86,15 +88,17 @@ public class InputController : MonoBehaviour
     }
     private void OnDisable()
     {        
-        /*
-         * Work1.停用Input对象
-         */
+        
+        //停用Input对象
+         
         theInput.Disable();
     }
 
 
 
     #region 小方法和外部调用
+
+    #region 外部调用-输入切换
     public void GamePlayInput()
     {
         //Gameplay阶段的运行输入启用
@@ -113,7 +117,34 @@ public class InputController : MonoBehaviour
         theInput.Disable();
         theInput.MainMenu.Enable();
     }
+    #endregion
 
+    #region 外部调用-按键检测
+    //主要用于玩家状态切换时做一些判断
+    public bool WhetherZPressing()
+    {
+        return theInput.Gameplay.ItemUse1.ReadValue<float>() > .5f;
+    }
+    public bool WhetherXPressing()
+    {
+        return theInput.Gameplay.ItemUse2.ReadValue<float>() > .5f;
+    }
+    public bool WhetherCPressing()
+    {
+        return theInput.Gameplay.Jump.ReadValue<float>() > .5f;
+    }
+    public bool WhetherSPressing()
+    {
+        return theInput.Gameplay.Exchange.ReadValue<float>() > .5f;
+    }
+    public bool WhetherFPressing()
+    {
+        return theInput.Gameplay.Interact.ReadValue<float>() > .5f;
+
+    }
+    #endregion
+
+    #region 内部使用-按键注册
     private void GamePlayInputRegister()
     {
         /* Gameplay阶段的按键注册（排除方向键）
@@ -161,7 +192,7 @@ public class InputController : MonoBehaviour
                 //{
                 //    转到Fall状态
                 //}
-                Debug.Log("松了？");
+               // Debug.Log("松了？");
                 thePlayer.HalfYVelocity();
             }
 
@@ -203,6 +234,7 @@ public class InputController : MonoBehaviour
         {
             if (thePlayer.GetCanAct())
             {
+                thePlayer.WhetherCanInteract();
                 if (thePlayer.canInteract)
                 {
                     if (thePlayer.CurrentState() == thePlayer.handleState)
@@ -211,9 +243,14 @@ public class InputController : MonoBehaviour
                     }
                     else
                     {
+                        Debug.Log("交互");
                         thePlayer.theInteractable.Interact();
                     }
 
+                }
+                else
+                {
+                    Debug.Log("不能交互");
                 }
             }
         };
@@ -252,44 +289,27 @@ public class InputController : MonoBehaviour
          * Work1.退出键
          */
     }
+    #endregion
 
-    public void DialoguingInput()
-    {
-        if (theDC.isPrinting)
-        {
-            theDC.QuickPrint();
-        }
-        else
-        {
-            theDC.NextSentence();
-        }
-    }
-
-    #region 小方法和外部调用
-    public bool WhetherZPressing()
-    {
-        return theInput.Gameplay.ItemUse1.ReadValue<float>() > .5f;
-    }
-    public bool WhetherXPressing()
-    {
-        return theInput.Gameplay.ItemUse2.ReadValue<float>() > .5f;
-    }
-    public bool WhetherCPressing()
-    {
-        return theInput.Gameplay.Jump.ReadValue<float>() > .5f;
-    }
-    public bool WhetherSPressing()
-    {
-        return theInput.Gameplay.Exchange.ReadValue<float>() > .5f;
-    }
-    public bool WhetherFPressing()
-    {
-        return theInput.Gameplay.Interact.ReadValue<float>() > .5f;
-
-    }
     #endregion
 
 
+    #region 暂时没有使用的方法
+    //public void DialoguingInput()
+    //{
+    //    if (theDC.isPrinting)
+    //    {
+    //        theDC.QuickPrint();
+    //    }
+    //    else
+    //    {
+    //        theDC.NextSentence();
+    //    }
+    //}
+
+
     #endregion
+
+
 
 }

@@ -1,14 +1,9 @@
 using Cinemachine;
 using StructForSaveData;
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Xml;
-using Unity.VisualScripting;
 using UnityEngine;
 using PlayerInterfaces;
-using UnityEngine.InputSystem;
-using static UnityEditor.Rendering.ShadowCascadeGUI;
+using InteractableInterface;
 using SubInteractiveEnum;
 
 public class NewPlayerController : MonoBehaviour,ISave<PlayerSaveData>
@@ -411,7 +406,7 @@ public class NewPlayerController : MonoBehaviour,ISave<PlayerSaveData>
 
     public void WhetherCanInteract()
     {
-        /* 本方法用于判断当前是否可以进行场景交互，适用于在具体状态下Update
+        /* 本方法用于判断当前是否可以进行场景交互，适用于在按下交互键时使用
          * 
          * Step1.判断当前是不是处于某些通常来说不能进行场景交互的状态。例如道具使用，
          * Step2.判断当前是否存在可交互对象足够稳健的状态//TODO：这个地方还有很多空间可以调整
@@ -425,7 +420,7 @@ public class NewPlayerController : MonoBehaviour,ISave<PlayerSaveData>
             }
             else
             {
-                canInteract = true;
+                canInteract = false;
             }
         }
     }
@@ -451,16 +446,15 @@ public class NewPlayerController : MonoBehaviour,ISave<PlayerSaveData>
         {
             FloorController theFloor = other.GetComponent<FloorController>();
             theFloor.SetPlayer(this);
-            theFloor.Floor_Enter();
+            theFloor.currentFloor?.PlayerEnter();
         }
     }
 
 
     private void OnTriggerStay2D(Collider2D other)//Enter在瞬间可能ComCol还没检测到
     {
-        if (other.GetComponent<PlatformController>())
+        if (other.TryGetComponent<PlatformController>(out PlatformController thePlatform))
         {
-            PlatformController thePlatform = other.GetComponent<PlatformController>();
             if (//thePlatform.GetPlayer() == null && 
                 thePlatform.GetComCol() == thisPR.RayHit().collider)
             {
@@ -474,33 +468,23 @@ public class NewPlayerController : MonoBehaviour,ISave<PlayerSaveData>
 
             }
 
-        }else if (other.GetComponent<FloorController>())
+        }else if (other.TryGetComponent<FloorController>(out FloorController theFloor))
         {
-            FloorController theFloor = other.GetComponent<FloorController>();
-            theFloor.Floor_Stay(); 
+            theFloor.currentFloor?.PlayerStay(); 
         }
     }
 
     private void OnTriggerExit2D(Collider2D other)
     {
-        if (other.GetComponent<PlatformController>())
+        if (other.TryGetComponent<PlatformController>(out PlatformController thePlatform))
         {
-            PlatformController thePlatform = other.GetComponent<PlatformController>();
-                //Debug.Log("退出");
-            //if (
-            //    //thePlatform.GetPlayer() == this&& 
-            //    stateMachine.currentState==jumpState)
-            {
-                thePlatform.SetPlayer(null);
-
-                //this.transform.parent=null;
-            }
+            thePlatform.SetPlayer(null);
             thePlatform.hasSensored = false;
         }
-        else if(other.GetComponent<FloorController>()) 
+        else if (other.TryGetComponent<FloorController>(out FloorController theFloor))
         {
             other.GetComponent<FloorController>().ClearPlayer();
-            //theFloor.Floor_Exit();
+            theFloor.currentFloor? .PlayerExit();
         }
     }
     #endregion
@@ -853,7 +837,10 @@ public class NewPlayerController : MonoBehaviour,ISave<PlayerSaveData>
         uncontrolCounter = 0;
     }
 
-
+    public void SetHandle(IHandle theHandler)
+    {
+        theHandle = theHandler;
+    }
 
 
 

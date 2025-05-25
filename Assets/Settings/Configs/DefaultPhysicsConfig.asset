@@ -24,13 +24,13 @@ MonoBehaviour:
   peakSpeed: 0
   normalGravity: 1
   peakGravity: 1.6
-  riseGravity: 2
-  risegravityMultiplier: 0.01
-  fallGravity: 3
-  fallGravityMultiplier: 0.025
+  riseGravity: 1
+  risegravityMultiplier: 0.005
+  fallGravity: 1.5
+  fallGravityMultiplier: 0.01
   normalDrag: 0
   airDrag: 1
-  fallMaxGravity: 12
+  fallMaxGravity: 10
   hasWallDuration: 0.1
   hasForwardDuration: 0.1
   hasRaycastGoundDuration: 0.1

@@ -3,6 +3,8 @@
 using UnityEditor;
 using UnityEngine;
 
+using System.Linq;
+
 public class SceneConnectionEditor : EditorWindow
 {
     private SceneConnectionManager manager;
@@ -25,6 +27,7 @@ public class SceneConnectionEditor : EditorWindow
             false
         );
 
+        if (manager == null) return;
         if (GUILayout.Button("Create New", GUILayout.Width(100)))
         {
             string path = EditorUtility.SaveFilePanelInProject(
@@ -57,14 +60,50 @@ public class SceneConnectionEditor : EditorWindow
                 manager.connections[i].mainScene
             );
 
+            var mainSceneAsset = FindSceneAssetByName(manager.connections[i].mainScene);
+            var newMainSceneAsset = (SceneAsset)EditorGUILayout.ObjectField(
+                "Main Scene",
+                mainSceneAsset,
+                typeof(SceneAsset),
+                false
+            );
+            if (newMainSceneAsset != mainSceneAsset)
+            {
+                manager.connections[i].mainScene = newMainSceneAsset ? newMainSceneAsset.name : "";
+            }
+
+
+
+
             // 邻近场景列表
             EditorGUILayout.LabelField("Neighbor Scenes");
             for (int j = 0; j < manager.connections[i].neighborScenes.Count; j++)
             {
                 EditorGUILayout.BeginHorizontal();
+
+
                 manager.connections[i].neighborScenes[j] = EditorGUILayout.TextField(
                     manager.connections[i].neighborScenes[j]
                 );
+
+                var currentAsset = FindSceneAssetByName(manager.connections[i].neighborScenes[j]);
+                var newAsset = (SceneAsset)EditorGUILayout.ObjectField(
+                    currentAsset,
+                    typeof(SceneAsset),
+                    false
+                );
+
+                if (newAsset != currentAsset)
+                {
+                    manager.connections[i].neighborScenes[j] = newAsset ? newAsset.name : "";
+                }
+
+
+
+
+
+
+
                 if (GUILayout.Button("-", GUILayout.Width(20)))
                 {
                     manager.connections[i].neighborScenes.RemoveAt(j);
@@ -100,6 +139,17 @@ public class SceneConnectionEditor : EditorWindow
         {
             EditorUtility.SetDirty(manager);
         }
+    }
+
+    private SceneAsset FindSceneAssetByName(string sceneName)
+    {
+        if (string.IsNullOrEmpty(sceneName)) return null;
+
+        var guids = AssetDatabase.FindAssets("t:SceneAsset " + sceneName);
+        if (guids.Length == 0) return null;
+
+        var path = AssetDatabase.GUIDToAssetPath(guids[0]);
+        return AssetDatabase.LoadAssetAtPath<SceneAsset>(path);
     }
 }
 #endif

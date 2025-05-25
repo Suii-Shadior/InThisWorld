@@ -12,4 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b202cf0ec58e0043875ab6617b81e98, type: 3}
   m_Name: DefaultAttackableConfigSo
   m_EditorClassIdentifier: 
-  canBeAttackableDuration: 0
+  Blocker_canBeAttackableDuration: 0.2
+  Blocker_ISTRIGGEREDSTR: isTriggered
+  Blocker_ISUNTRIGGEREDSTR: isUntriggered
+  Blocker_ATTACKINGSTR: isAttacking
+  Leveler_canBeInteractedDuration: 0.2
+  Leveler_ISINTERACTINGSTR: isInteracting
+  Leveler_ISALTINTERACTINGSTR: isAltInteracting
+  Leveler_CANBEINTERACTED: canBeInteracted
+  Nailer_ISTRIGGEREDSTR: isTriggered
+  Nailer_ISUNTRIGGEREDSTR: isUntriggered
+  Nailer_ATTACKINGSTR: isAttacking

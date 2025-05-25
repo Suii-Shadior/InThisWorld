@@ -1,45 +1,23 @@
 using System.Collections;
 using System.Collections.Generic;
-using HandlerFactoryRelated;
 using UnityEngine;
-using InteractiveAndInteractableEnums;
 using PlayerInterfaces;
 using InteractableInterface;
-using InteractableFactoryRelated;
 
-public class HandlerController : MonoBehaviour,IInteract
+public class SaveItem : MonoBehaviour,IInteract
 {
-
-    #region 变量
-    [Header("Hnadler Setting")]
-    public handlerType thisHandleType;
-    private HandlerFactory_Handler thisFactory;
-    public bool isMirrorInput;
-    [Header("Hnader Info")]
-    public NewPlayerController thePlayer;
-    public IHandle currentHandler;
-    [Header("MoveablePlatform Related")]
-    public PlatformController[] thePlatforms;
-    #endregion
+    private DataController theData;
+    private LevelController theLevel;
+    private NewPlayerController thePlayer;
+    public Transform thisLoadingPos;
 
 
-
-
-    void Awake()
+    private void Start()
     {
-        switch (thisHandleType)
-        {
-            case handlerType.moveableplatform_handler:
-                thisFactory = new HandlerFactory();
-                break;
-            default:
-                break;
-        }
-        //currentInteract = thisFactory?.CreateHandler(this);
-        currentHandler = thisFactory?.CreateHandler(this);
+        theData = ControllerManager.instance.theData;
+        theLevel = ControllerManager.instance.theLevel;
+        thePlayer = ControllerManager.instance.thePlayer;
     }
-
-
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.TryGetComponent<NewPlayerController>(out NewPlayerController _thePlayer))
@@ -55,13 +33,15 @@ public class HandlerController : MonoBehaviour,IInteract
         }
     }
 
-
     #region 接口相关
     public void Interact()
     {
-        thePlayer.SetHandle(currentHandler);
-        thePlayer.ChangeToHandleState();
+        Debug.Log("开始保存");
+        thePlayer.InteractRelated_SaveItem(thisLoadingPos.position);
+        theData.SaveByJson();
+        theData.SetSaveDataRelationsByPlayerPrefs();
     }
+
     public void SetPlayer(NewPlayerController _thePlayer)
     {
         if (_thePlayer.theInteractable == null)
@@ -81,8 +61,5 @@ public class HandlerController : MonoBehaviour,IInteract
             //Debug.Log("移除交互对象");
         }
     }
-
     #endregion
-
-
 }

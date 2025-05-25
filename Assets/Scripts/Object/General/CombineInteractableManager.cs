@@ -52,14 +52,14 @@ public class CombineInteractableManager : MonoBehaviour
     {
         foreach (SwitchController _switch in switchs)
         {
-            _switch.JustTrigger();
+            _switch.currentSwitch?.JustTrigger(); 
         }
     }
     public void SwitchReset()
     {
         foreach (SwitchController _switch in switchs)
         {
-            _switch.hadAutoReset();
+            _switch.currentSwitch?.JustReset();
         }
     }
 
