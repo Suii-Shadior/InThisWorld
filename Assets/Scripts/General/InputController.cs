@@ -8,25 +8,26 @@ using UnityEngine.Windows;
 public class InputController : MonoBehaviour
 {
 
-    [Header("将方向键输入从案件注册剥离的原因：\n" +
-        "1、方向键输入内容根据不同的情况下往往产生的逻辑作用不同，如果用事件则需要大量的标识进行辅助判断当前应该干什么，放在本脚本里面太过困难且容易变得可读性极差。\n" +
-        "2、故方向键的按键统一输入，在需要实现的脚本内进行再处理")]
+
     #region 组件
     private ControllerManager thisCM;
     private Input1 theInput;
     private NewPlayerController thePlayer;
     private LevelController theLevel;//管理关卡的
     private UIController theUI;
-    private DialogeController theDC;
+
     #endregion
 
     /* 本控制器主要职责：
      * 1、区分输入地图，并定义切换逻辑
      * 2、注册每个输入地图按键事件
+     * 3、进行方向键预输入
      * 
      * 注意点：
-     * 1、关于案件逻辑切换往往是在特定按键或者事件触发，且同时涉及玩家、UI、按键、相机等多个内容。为了
-     * 
+     * 1、关于按键逻辑切换往往是在特定按键或者事件触发，且同时涉及玩家、UI、按键、相机等多个控制器，具体内容详见UI控制器。
+     * 2、将方向键具体输入从案件注册剥离的原因：
+     *  a.方向键输入内容根据不同的情况下往往产生的逻辑作用不同，如果用事件则需要大量的标识进行辅助判断当前应该干什么，放在本脚本里面太过困难且容易变得可读性极差
+     *  b.故方向键的按键统一输入，在需要实现的脚本内进行再处理")
      * 
      * 
      
@@ -55,7 +56,7 @@ public class InputController : MonoBehaviour
         thePlayer = thisCM.thePlayer;//Tip;根据场景不同可能不能放在这
         theLevel = thisCM.theLevel;
         theUI = thisCM.theUI;
-        theDC = thisCM.theDC;
+
 
         theInput = new Input1();
     }

@@ -9,13 +9,24 @@ using Unity.VisualScripting;
 
 public class UIController : MonoBehaviour
 {
+
+    /* 本控制器主要职责：
+     * 1、管理所有UI对象，包括全屏UI和场景UI
+     * 2、统筹全局游戏状态控制器相关的内容
+     * 
+     * 注意点：
+     * 1、由UI控制器进行统筹游戏状态相关内容其实超越了设立时的职责范围，仅因为UI是最直观的变化内容而选择由其统筹。
+     * 
+     * 
+     * 
+     */
     #region 组件及其他
     private ControllerManager theCM;
     private DataController theData;
     private NewPlayerController thePlayer;
     private LevelController theLevel;
     private InputController theInput;
-    private DialogeController theDC;//用于触发对话
+
     private EventController theEC;
     private ButtonLogic theButtons;
     [SerializeField] public UIConfig UIConfig;
@@ -72,7 +83,6 @@ public class UIController : MonoBehaviour
         theLevel = theCM.theLevel;
         thePlayer = theCM.thePlayer;
         theInput = theCM.theInput;
-        theDC = theCM.theDC;
         theEC = theCM.theEvent;
 
         theButtons = GetComponent<ButtonLogic>();
