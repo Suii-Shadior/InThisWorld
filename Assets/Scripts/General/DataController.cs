@@ -50,7 +50,6 @@ public class DataController : MonoBehaviour
         "3.将存档类型信息封装进了SaveData中，不只使用具体可存储内容的Jsonstring，牺牲了一定的效率，保留了灵活性")]
     private Dictionary<string, SaveData> saveableObjectsCacheData;
     [Header("SaveFile Related")]
-    private string currentSaveFolderPath;
     private string currentSaveFliePath;
     private string currentSaveDataOverview;
     public bool RelativeAddressMode;
@@ -92,7 +91,7 @@ public class DataController : MonoBehaviour
 
         SendPlayerPrefsToUI();
         //SaveDataCheck();
-        currentSaveFolderPath = RelativeAddressMode ? dataConfig.SAVEFOLDERPATHLOCALSTR : dataConfig.SAVEFOLDERPATHSTR;
+
 
         activitySaveableObjects = new();
         saveableObjectsCacheData = new();
@@ -132,48 +131,64 @@ public class DataController : MonoBehaviour
     private void GetSaveDataIndexFromPlayerPrefs()
     {
         //用于选择存档位等众多适合存在PlayerPrefs中的内容,适用于游戏最初运行时
-        if(!PlayerPrefs.HasKey(dataConfig.FILEPATHSTR))
+        if (thisCM.isTestMode)
         {
-            currentSaveFliePath = PlayerPrefs.GetString(dataConfig.FILEPATHSTR);
+            currentSaveFliePath= dataConfig.TESTSCENESTR;
         }
         else
         {
-            currentSaveFliePath = dataConfig.FILEPATH1STR;
+
+            if (!PlayerPrefs.HasKey(dataConfig.FILEPATHSTR))
+            {
+                currentSaveFliePath = PlayerPrefs.GetString(dataConfig.FILEPATHSTR);
+            }
+            else
+            {
+                currentSaveFliePath = dataConfig.FILEPATH1STR;
+            }
         }
 
     }
     public void SaveDataCheck()
     {
-        if(File.Exists(Path.Combine(currentSaveFolderPath, dataConfig.FILEPATH1STR + ".json")))
+        if (thisCM.isTestMode)
         {
-            string saveData1Overview = PlayerPrefs.GetString(dataConfig.OVERVIEW1STR);
-            Debug.Log(saveData1Overview);
-            SaveDataOverview overview1 = JsonUtility.FromJson<SaveDataOverview>(saveData1Overview);
-            theUI.saveDataOverviews.Add(overview1);
-            //theUI.saveDataOverviews.Add(JsonUtility.FromJson<SaveDataOverview>(saveData1Overview));
 
         }
         else
         {
-            theUI.saveDataOverviews.Add(new SaveDataOverview());
-        }
-        if (File.Exists(Path.Combine(currentSaveFolderPath, dataConfig.FILEPATH2STR + ".json")))
-        {
-            string saveData2Overview = PlayerPrefs.GetString(dataConfig.OVERVIEW2STR);
-            theUI.saveDataOverviews.Add(JsonUtility.FromJson<SaveDataOverview>(saveData2Overview));
-        }
-        else
-        {
-            theUI.saveDataOverviews.Add(new SaveDataOverview());
-        }
-        if (File.Exists(Path.Combine(currentSaveFolderPath, dataConfig.FILEPATH3STR + ".json")))
-        {
-            string saveData2Overview = PlayerPrefs.GetString(dataConfig.OVERVIEW3STR);
-            theUI.saveDataOverviews.Add(JsonUtility.FromJson<SaveDataOverview>(saveData2Overview));
-        }
-        else
-        {
-            theUI.saveDataOverviews.Add(new SaveDataOverview());
+            if (File.Exists(Path.Combine(dataConfig.SAVEFOLDERPATHSTR, dataConfig.FILEPATH1STR + ".json")))
+            {
+                string saveData1Overview = PlayerPrefs.GetString(dataConfig.OVERVIEW1STR);
+                Debug.Log(saveData1Overview);
+                SaveDataOverview overview1 = JsonUtility.FromJson<SaveDataOverview>(saveData1Overview);
+                theUI.saveDataOverviews.Add(overview1);
+                //theUI.saveDataOverviews.Add(JsonUtility.FromJson<SaveDataOverview>(saveData1Overview));
+
+            }
+            else
+            {
+                theUI.saveDataOverviews.Add(new SaveDataOverview());
+            }
+            if (File.Exists(Path.Combine(dataConfig.SAVEFOLDERPATHSTR, dataConfig.FILEPATH2STR + ".json")))
+            {
+                string saveData2Overview = PlayerPrefs.GetString(dataConfig.OVERVIEW2STR);
+                theUI.saveDataOverviews.Add(JsonUtility.FromJson<SaveDataOverview>(saveData2Overview));
+            }
+            else
+            {
+                theUI.saveDataOverviews.Add(new SaveDataOverview());
+            }
+            if (File.Exists(Path.Combine(dataConfig.SAVEFOLDERPATHSTR, dataConfig.FILEPATH3STR + ".json")))
+            {
+                string saveData2Overview = PlayerPrefs.GetString(dataConfig.OVERVIEW3STR);
+                theUI.saveDataOverviews.Add(JsonUtility.FromJson<SaveDataOverview>(saveData2Overview));
+            }
+            else
+            {
+                theUI.saveDataOverviews.Add(new SaveDataOverview());
+            }
+
         }
     }
     private void SendPlayerPrefsToUI()
@@ -197,10 +212,10 @@ public class DataController : MonoBehaviour
          * 
          */
         //
-        if (File.Exists(Path.Combine(currentSaveFolderPath, currentSaveFliePath + ".json")))
+        if (File.Exists(Path.Combine(dataConfig.SAVEFOLDERPATHSTR, currentSaveFliePath + ".json")))
         {
             Debug.Log("存档存在且开始读取");
-            StreamReader theSR = new(Path.Combine(currentSaveFolderPath, currentSaveFliePath + ".json"));
+            StreamReader theSR = new(Path.Combine(dataConfig.SAVEFOLDERPATHSTR, currentSaveFliePath + ".json"));
             string json = theSR.ReadToEnd();
             theSR.Close();
 
@@ -216,7 +231,7 @@ public class DataController : MonoBehaviour
         else
         {
             //saveableObjectsSaveData = oringinaldata;
-            Debug.Log("存档不存在");
+            Debug.Log(currentSaveFliePath+"存档不存在");
         }
     }
     private void ISaveableRegister(ISaveable _saveable)
@@ -345,7 +360,7 @@ public class DataController : MonoBehaviour
             items = theitems
         };
 
-        File.WriteAllText(Path.Combine(currentSaveFolderPath, currentSaveFliePath + ".json"), JsonUtility.ToJson(theDictWrapper));
+        File.WriteAllText(Path.Combine(dataConfig.SAVEFOLDERPATHSTR, currentSaveFliePath + ".json"), JsonUtility.ToJson(theDictWrapper));
         //Debug.Log(Path.Combine(currentSaveFolderPath, currentSaveFliePath + ".json")+"保存成功");
 
         CacheDataOriginSet();

@@ -1,5 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEditor;
+using System.Linq;
 
 [CreateAssetMenu(fileName = "SceneConnectionManager", menuName = "Scene Management/Scene Connection Manager")]
 public class SceneConnectionManager : ScriptableObject
@@ -9,6 +11,9 @@ public class SceneConnectionManager : ScriptableObject
     {
         public string mainScene;
         public List<string> neighborScenes = new List<string>();
+
+        //public SceneAsset mainScene; 
+        //public List<SceneAsset> neighborScenes = new List<SceneAsset>();
     }
 
     public List<SceneConnection> connections = new List<SceneConnection>();//使用List作为原始数据的输入可以方便在Inspector中手动添加

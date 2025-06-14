@@ -21,6 +21,7 @@ public class LevelController : MonoBehaviour, ISave<LevelSaveData>
     #endregion
 
     #region ±‰¡ø
+    
     [Header("WorkState")]
     private bool isLevelLoading;
     public bool isPausing;
@@ -40,6 +41,7 @@ public class LevelController : MonoBehaviour, ISave<LevelSaveData>
     private const string LEVELSAVEDATAIDSTR = "LevelSaveData";
     private const string PERSISTENTGAMEPLAYOBJECTSSTR = "PersistentGameplayObjects";
     private const string ORIGINALSCENESTR = "SideA_P0-R1";
+    
     public const string SAVEDATASCENESTR = "SaveData_LastSaveScaneName";
     #endregion
 

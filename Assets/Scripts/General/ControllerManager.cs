@@ -15,7 +15,9 @@ public class ControllerManager : MonoBehaviour
     public DialogeController theDC;
     public PuzzleController thePC;
     public DataController theData;
-    
+
+    public bool isTestMode;
+
     private void Awake()
     {
         if (instance == null)

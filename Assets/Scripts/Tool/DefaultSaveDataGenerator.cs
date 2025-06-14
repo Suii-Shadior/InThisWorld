@@ -10,11 +10,33 @@ using UnityEngine;
 
 public class DefaultSaveDataGenerator : EditorWindow
 {
+    /* 该编辑器用于对外存存档文件进行编辑，进而实现相应游戏内容配置
+     * 
+     * 目前实现的功能：
+     * 1、选择目标文件夹，根据目标文件夹情况显示已有存档
+     * 2、在目标文件夹内新建存档空白存档，或者选择已有存档进行编辑
+     * 3、读取并显示目标存档当前内容，同时支持类型检索和ID的模糊搜索
+     * 4、在目标存档内添加或删除存档条目，编辑存档条目内容
+     * 5、检查已修改内容是否合规，若合规则保存至目标存档，若不合规则高亮显示
+     * 
+     * 
+     * 目前实现的思路：
+     * 1、分为CreateTab和EditTab，CreateTab主要包括文件名输入框、文件夹选取框、文件展示框、按钮区四部分，EditorTab主要包括编辑对象开关，筛选与搜索区，存档内容展示及编辑区、保存按钮组成；
+     * 2、CreateTab中文件展示区通过Directory.GetFiles获取到所有存档对象，通过existingSaves遍历DrawFileListItem展示
+     * 3、EditTab中存档内容通过DictionaryWrapper获取到目标存档内容，通过currentEntries遍历DrawEntry展示；筛选搜索是通过filteredEntries得到
+     * 
+     * 
+     * 可能之后需要补充实现的功能：
+     * 1、对应条目可以添加不定量TAG，用于更快捷和复杂的范围遍历
+     * 2、添加场景检索和多条件检索，更方便查找对象。
+     */
+
+
     #region 数据结构及其他
     private struct SaveDataEntry
     {
         public string id;
-        public StructForSaveData.DataTypes dataType;
+        public DataTypes dataType;
         public string jsonData;
         public bool hasError;
         public bool isExpanded;
@@ -30,11 +52,12 @@ public class DefaultSaveDataGenerator : EditorWindow
     #endregion
     #region 变量
     private int selectedTab = 0;
-    private bool RelativeAddressMode = true;
+    private bool DefaultSaveDataMode = false;
+    private string currentFolderPath;
+    private string currentFilePath;
     [Header("第一选项卡")]
     private Vector2 fileListScrollPos;
-    //private bool pendingTab;
-    private string newFileName = "NewSave";//默认为NewSave
+    private string newFileName = "NewSave";
     private List<string> existingSaves = new List<string>();
     private int selectedFileIndex = -1;
     [Header("第二选项卡")]
@@ -51,15 +74,12 @@ public class DefaultSaveDataGenerator : EditorWindow
     private DataTypes selectedFilterType;
     private DataTypes allTypesMask;
     private List<SaveDataEntry> filteredEntries = new List<SaveDataEntry>();
+    private List<int> filteredIndices = new ();
     #endregion
     #region 常量
     [Header("Const Related")]
     private string SAVEFOLDERPATHSTR= "C:\\Users\\Administrator\\AppData\\LocalLow\\SeiDoge\\InThisWorld\\SaveData";//默认为Assets/SaveData/
-    private string SAVEFOLDERPATHLOCALSTR = "Assets\\SaveData";
-    private const string FILEPATHSTR = "LastGamePlayInfo_FilePath";
-    private const string FILEPATH1STR = "\\SaveData1";
-    private const string FILEPATH2STR = "\\SaveData2";
-    private const string FILEPATH3STR = "\\SaveData3";
+    private string SAVEFOLDERPATHLOCALSTR = "Assets\\Settings\\SaveData";
     #endregion
 
     [MenuItem("Tools/Default Save Data Generator")]
@@ -72,7 +92,7 @@ public class DefaultSaveDataGenerator : EditorWindow
 
     private void OnGUI()
     {
-        RelativeAddressMode = GUILayout.Toggle(RelativeAddressMode,"isRelativeMode" );
+        DefaultSaveDataMode = GUILayout.Toggle(DefaultSaveDataMode, "isDefaultSaveDataMode");
 
         GUILayout.Space(10);
         TabSelect();
@@ -118,13 +138,13 @@ public class DefaultSaveDataGenerator : EditorWindow
         #region 第二行 文件夹输入框
         GUILayout.BeginHorizontal();
 
-        if (RelativeAddressMode)
+        if (DefaultSaveDataMode)
         {
-            SAVEFOLDERPATHLOCALSTR = EditorGUILayout.TextField("Save Folder Path", SAVEFOLDERPATHLOCALSTR);
+            currentFolderPath = EditorGUILayout.TextField("Save Folder Path", SAVEFOLDERPATHLOCALSTR);
         }
         else
         {
-            SAVEFOLDERPATHSTR = EditorGUILayout.TextField("Save Folder Path", SAVEFOLDERPATHSTR);
+            currentFolderPath = EditorGUILayout.TextField("Save Folder Path", SAVEFOLDERPATHSTR);
 
         }
         CreateTab_Brower();
@@ -157,12 +177,14 @@ public class DefaultSaveDataGenerator : EditorWindow
     private void DrawEditTab()
     {
         GUILayout.Space(10);
+        GUILayout.BeginHorizontal();
         selectedSaveFile = (TextAsset)EditorGUILayout.ObjectField("Save File", selectedSaveFile, typeof(TextAsset), false);
         EditTab_EditMode();//若!isEditMode 读取存档，更新currentEntries，若isEditMode 清空currentEntries
+        GUILayout.EndHorizontal();
         if (isEditMode)
         {
             //根据currentEntries更新展示框内容
-            DrawEditControls();
+            DrawEditComponents();
         }
         else
         {
@@ -173,155 +195,97 @@ public class DefaultSaveDataGenerator : EditorWindow
     #region Layout模块
     private void DrawFileList()
     {
-        //Step1.清空已有的文件展示框内容
+        //Step1.清空已有的文件展示框内容,并验证该文件夹是否存在
         existingSaves.Clear();
-        //try
-        //{
-        //若手动输入文件夹，若不存在，视为创建文件夹
-
-        if (RelativeAddressMode)
+        if (!Directory.Exists(currentFolderPath))
         {
-
-            if (!Directory.Exists(SAVEFOLDERPATHLOCALSTR))
+            bool createFolder = EditorUtility.DisplayDialog(
+            "文件夹不存在",
+            $"路径 '{currentFolderPath}' 不存在。是否创建此文件夹？",
+            "是", "否"
+            );
+            if (createFolder)
             {
-                //Directory.CreateDirectory(SAVEFOLDERPATHLOCALSTR);
-                EditorUtility.DisplayDialog("Error", "不存在的文件夹，请确认后重试", "OK");
-            }
-        }
-        else
-        {
-            if (!Directory.Exists(SAVEFOLDERPATHSTR))
-            {
-                //Directory.CreateDirectory(SAVEFOLDERPATHSTR);
-                EditorUtility.DisplayDialog("Error", "不存在的文件夹，请确认后重试", "OK");
-            }
-        }
-
-        // Step2.获取该文件夹中所有.json文件，并忽略meta文件,并将其转换为文本文件\
-
-        if (RelativeAddressMode)
-        {
-            var files = Directory.GetFiles(SAVEFOLDERPATHLOCALSTR, "*.json")
-                .Where(file => !file.EndsWith(".meta"))
-                .ToList();
-            foreach (var file in files)
-            {
-                string relativePath = file.Replace(SAVEFOLDERPATHLOCALSTR + "\\", "");
-                existingSaves.Add(relativePath);
-            }
-        }
-        else
-        {
-            var files = Directory.GetFiles(SAVEFOLDERPATHSTR, "*.json")
-                .Select(Path.GetFileName)
-                .ToList();
-            foreach (var file in files)
-            {
-                string relativePath = file.Replace(SAVEFOLDERPATHSTR + "\\", "");
-                existingSaves.Add(relativePath);
-            }
-        }
-    }
-
-    private void DrawEditControls()
-    {
-        #region 第一部分
-        GUILayout.BeginHorizontal();
-
-        // 搜索框
-        string newSearch = EditorGUILayout.TextField("搜索", searchString);
-        //if (newSearch != searchString)
-        //{
-        //    searchString = newSearch;
-        //    ApplyFilter();
-        //}
-
-        // 类型筛选下拉菜单
-        //DataTypes newType = (StructForSaveData.DataTypes)EditorGUILayout.EnumPopup("类型筛选", selectedFilterType);
-
-        DataTypes newType = (DataTypes)EditorGUILayout.EnumFlagsField("类型筛选", selectedFilterType);
-
-            if (selectedFilterType== DataTypes.Empty)
-            {
-                if(newType != DataTypes.Empty)
+                try
                 {
-                    selectedFilterType = newType;
-                    ApplyFilter();
+                    Directory.CreateDirectory(currentFolderPath);
+                    Debug.Log("创建成功");
+                    AssetDatabase.Refresh();
+                }
+                catch (Exception ex)
+                {
+                    // 处理创建文件夹时可能出现的错误
+                    EditorUtility.DisplayDialog("错误", $"创建文件夹失败: {ex.Message}", "确定");
+                    return;
                 }
             }
             else
             {
-                if(newType == DataTypes.Empty)
+                if (DefaultSaveDataMode)
                 {
-                
-                    selectedFilterType = DataTypes.Empty;
-                    ApplyFilter();
+                    currentFolderPath = EditorGUILayout.TextField("Save Folder Path", SAVEFOLDERPATHLOCALSTR);
                 }
                 else
                 {
-                    selectedFilterType = newType;
-                    ApplyFilter();
-                //if (selectedFilterType > newType)
-                //{
-                //    selectedFilterType &= newType;
-                //    ApplyFilter();
-                //}
-                //else if (selectedFilterType < newType)
-                //{
-                //    selectedFilterType |= newType;
-                //    if ((selectedFilterType & allTypesMask) == allTypesMask)
-                //    {
-                //        selectedFilterType = allTypesMask;
-                //    }
-                //    ApplyFilter();
-                //}
-                //else
-                //{
-
-                //}
+                    currentFolderPath = EditorGUILayout.TextField("Save Folder Path", SAVEFOLDERPATHSTR);
+                }
+                return;
             }
 
         }
-        
-        //if (newType != selectedFilterType)
-        //{
-        //    Debug.Log(newType.HasFlag(DataTypes.Empty));
-        //    //selectedFilterType = newType;
-        //    //ApplyFilter();
-        //    if (selectedFilterType == DataTypes.Empty)
-        //    {
-        //        selectedFilterType = newType & (~DataTypes.Empty);
-        //        ApplyFilter();
-        //    }
-        //    else
-        //    {
-        //        if (newType.HasFlag(DataTypes.Empty))
-        //        {
-        //            //Debug.Log("看不懂啊");
-        //            selectedFilterType = DataTypes.Empty;
-        //        }
-        //        else
-        //        {
-        //            //Debug.Log("？？？");
-        //            selectedFilterType = newType;
-        //        }
-        //        ApplyFilter();
-        //    }
-        //}
-
-
-        // 清除筛选按钮
-        if (GUILayout.Button("×", GUILayout.Width(20)))
+        else
         {
-            searchString = "";
-            selectedFilterType = StructForSaveData.DataTypes.Empty;
-            ApplyFilter();
+            // Step2.获取该文件夹中所有.json文件，并忽略meta文件,并将其转换为文本文件\
+            var files = Directory.GetFiles(currentFolderPath, "*.json")
+                .Where(file => !file.EndsWith(".meta"))
+                .ToList();
+            foreach (var file in files)
+            {
+                string relativePath = file.Replace(currentFolderPath + "\\", "");
+                existingSaves.Add(relativePath);
+            }
         }
 
+    }
+
+    private void DrawEditComponents()
+    {
+        #region 搜索筛选
+        GUILayout.BeginHorizontal();
+
+        string newSearch = EditorGUILayout.TextField("模糊搜索", searchString);
+        DataTypes newType = (DataTypes)EditorGUILayout.EnumFlagsField("类型筛选", selectedFilterType);
+        if (selectedFilterType== DataTypes.Empty)
+        {
+            if(newType != DataTypes.Empty)
+            {
+                selectedFilterType = newType;
+                ApplyFilter();
+            
+            }
+        }
+        else
+        {
+            if(newType == DataTypes.Empty)
+            {
+                
+                selectedFilterType = DataTypes.Empty;
+                ApplyFilter();
+            }
+            else
+            {
+                selectedFilterType = newType;
+                ApplyFilter();
+
+            }
+
+        }
+
+        EditerTab_CancelFilter();
         GUILayout.EndHorizontal();
         #endregion
 
-        #region 第二部分
+        #region 展示区功能键
         GUILayout.Space(10);
         GUILayout.BeginHorizontal();
         EditTab_Add();
@@ -329,23 +293,29 @@ public class DefaultSaveDataGenerator : EditorWindow
         GUILayout.EndHorizontal();
         #endregion
 
-        #region 第三部分
+       #region 第三部分
         scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
-        if (isFilterActive)
+        //if (isFilterActive)
+        //{
+        //    for (int i = 0; i < filteredEntries.Count; i++)
+        //    {
+        //        int originalIndex = currentEntries.IndexOf(filteredEntries[i]);
+        //        DrawEntry(originalIndex);
+        //    }
+        //}
+        //else
+        //{
+        //    for (int i = 0; i < currentEntries.Count; i++)
+        //    {
+        //        DrawEntry(i);
+        //    }
+        //}
+        for (int i = 0; i < filteredIndices.Count; i++)
         {
-            for (int i = 0; i < filteredEntries.Count; i++)
-            {
-                int originalIndex = currentEntries.IndexOf(filteredEntries[i]);
-                DrawEntry(originalIndex);
-            }
+            int originalIndex = filteredIndices[i];
+            DrawEntry(originalIndex);
         }
-        else
-        {
-            for (int i = 0; i < currentEntries.Count; i++)
-            {
-                DrawEntry(i);
-            }
-        }
+
         EditorGUILayout.EndScrollView();
         EidtTab_Save();
 
@@ -555,21 +525,14 @@ public class DefaultSaveDataGenerator : EditorWindow
     {
         if (GUILayout.Button("Browse", GUILayout.Width(80)))
         {
-            string newPath;
-            if (RelativeAddressMode)
+
+            string newPath= EditorUtility.OpenFolderPanel("Select Save Folder", currentFolderPath, "");
+
+            if (currentFolderPath != newPath)
             {
-                newPath = EditorUtility.OpenFolderPanel("Select Save Folder", SAVEFOLDERPATHLOCALSTR, "");//第一个参数是弹出的选择文件夹窗口名字，第二个是当前的位置，第三个当前选择的文件夹名字
                 if (!string.IsNullOrEmpty(newPath))
                 {
-                    SAVEFOLDERPATHLOCALSTR = newPath;
-                }
-            }
-            else
-            {
-                newPath = EditorUtility.OpenFolderPanel("Select Save Folder", SAVEFOLDERPATHSTR, "");
-                if (!string.IsNullOrEmpty(newPath))
-                {
-                    SAVEFOLDERPATHSTR = newPath;
+                    currentFolderPath = newPath;
                 }
             }
         }
@@ -586,14 +549,14 @@ public class DefaultSaveDataGenerator : EditorWindow
             }
             else
             {
-                if (RelativeAddressMode)
+                currentFilePath = Path.Combine(currentFolderPath, existingSaves[selectedFileIndex]);
+                if (DefaultSaveDataMode)
                 {
-                    selectedSaveFile = AssetDatabase.LoadAssetAtPath<TextAsset>((Path.Combine(SAVEFOLDERPATHLOCALSTR, existingSaves[selectedFileIndex])));
-
+                    selectedSaveFile = AssetDatabase.LoadAssetAtPath<TextAsset>(currentFilePath);
                 }
                 else
                 {
-                    selectedSaveFile = LoadTextAssetFromLocalPath(Path.Combine(SAVEFOLDERPATHSTR, existingSaves[selectedFileIndex]));
+                    selectedSaveFile = LoadTextAssetFromLocalPath(currentFilePath);
                 }
 
                 if (selectedSaveFile != null)
@@ -620,7 +583,7 @@ public class DefaultSaveDataGenerator : EditorWindow
             string fullPath;
             //string fullPath = Path.Combine(SAVEFOLDERPATHSTR, newFileName + ".json");
             //if (!Directory.Exists(SAVEFOLDERPATHSTR))//健壮性检测2
-            if (RelativeAddressMode)
+            if (DefaultSaveDataMode)
             {
                 if (!Directory.Exists(SAVEFOLDERPATHLOCALSTR))
                 {
@@ -681,16 +644,46 @@ public class DefaultSaveDataGenerator : EditorWindow
     {
         if (GUILayout.Button("Remove Selected Entry (-)") && isEditMode)
         {
+            //if (selectedEntryIndex != -1)
+            //{
+            //    currentEntries.RemoveAt(selectedEntryIndex);
+            //    selectedEntryIndex = -1;
+
+            //    ApplyFilter();
+            //}
+            //else
+            //{
+            //    EditorUtility.DisplayDialog("Error", "请选择要删除的可存储对象", "OK");
+            //}
+
             if (selectedEntryIndex != -1)
             {
-                currentEntries.RemoveAt(selectedEntryIndex);
-                selectedEntryIndex = -1;
+                // 从索引列表中移除
+                int filteredIndex = filteredIndices.IndexOf(selectedEntryIndex);
+                if (filteredIndex != -1)
+                {
+                    filteredIndices.RemoveAt(filteredIndex);
+                    // 从主列表中移除
+                    currentEntries.RemoveAt(selectedEntryIndex);
 
-                ApplyFilter();
-            }
-            else
-            {
-                EditorUtility.DisplayDialog("Error", "请选择要删除的可存储对象", "OK");
+                    // 更新索引：移除后所有大于该索引的值减1
+                    for (int i = 0; i < filteredIndices.Count; i++)
+                    {
+                        if (filteredIndices[i] > selectedEntryIndex)
+                        {
+                            filteredIndices[i]--;
+                        }
+                    }
+
+                    selectedEntryIndex = -1;
+                    Repaint();
+                }
+                else
+                {
+                    EditorUtility.DisplayDialog("Error", "请选择要删除的可存储对象", "OK");
+                }
+
+
             }
         }
     }
@@ -708,13 +701,14 @@ public class DefaultSaveDataGenerator : EditorWindow
             GenericMenu typeMenu = new GenericMenu();
             foreach (DataTypes type in Enum.GetValues(typeof(DataTypes)))
             {
-                if (type == DataTypes.Empty) continue;
+                if (type == DataTypes.Empty) continue;//这句话用途不明
 
                 typeMenu.AddItem(
                     new GUIContent(type.ToString()),//选项名
                     false,//是否默认
                     (userData) =>//回调lamda表达式
                     {
+                        int newIndex = currentEntries.Count;
                         DataTypes selectedType = (DataTypes)userData;
                         currentEntries.Add(new SaveDataEntry
                         {
@@ -724,19 +718,25 @@ public class DefaultSaveDataGenerator : EditorWindow
                             isExpanded = true
                         });
                         selectedFilterType = selectedType;
-                        ApplyFilter();
+                        //ApplyFilter();
+                        if (ShouldIncludeInFilter(currentEntries[newIndex]))
+                        {
+                            filteredIndices.Add(newIndex);
+                        }
+
+
+                        Repaint();
                     },
                     type//传递给回调函数的参数
                 );
             }
             typeMenu.ShowAsContext();
-
         }
     }
 
     private void EditTab_EditMode()
     {
-        if (GUILayout.Button(isEditMode ? "Exit Edit Mode" : "Enter Edit Mode"))
+        if (GUILayout.Button(isEditMode ? "Exit Edit Mode" : "Enter Edit Mode", GUILayout.Width(120)))
         {
             //isEditMode取反
             if (isEditMode)
@@ -780,52 +780,38 @@ public class DefaultSaveDataGenerator : EditorWindow
             }
         }
     }
-
+    private void EditerTab_CancelFilter()
+    {
+        if (GUILayout.Button("×", GUILayout.Width(20)))
+        {
+            searchString = "";
+            selectedFilterType = StructForSaveData.DataTypes.Empty;
+            ApplyFilter();
+        }
+    }
 
     private void EidtTab_Save()
     {
+        string tempSearch = searchString;
+        DataTypes tempFilter = selectedFilterType;
+        List<int> errorIndices = new ();
         if (GUILayout.Button("Save Changes"))
         {
-            var errorIndices = new List<int>();
-            var idSet = new HashSet<string>();
 
-            for (int i = 0; i < currentEntries.Count; i++)//遍历并进行数据检测，同时将错误数据进行标记。标记完毕后替代原有数据
-            {
-                var entry = currentEntries[i];
-                entry.hasError = false;
+            searchString = "";
+            selectedFilterType = allTypesMask;
+            ApplyFilter();
+            errorIndices = ValidateAllEntries();
 
-                // 验证规则
-                if (string.IsNullOrEmpty(entry.id))
-                {
-                    entry.hasError = true;
-                    errorIndices.Add(i);
-                }
-                else if (idSet.Contains(entry.id))
-                {
-                    entry.hasError = true;
-                    errorIndices.Add(i);
-                }
-                else
-                {
-                    idSet.Add(entry.id);
-                }
+         
+        }
 
-                if (entry.dataType == StructForSaveData.DataTypes.Empty)
-                {
-                    entry.hasError = true;
-                    errorIndices.Add(i);
-                }
-
-                currentEntries[i] = entry;
-            }
-
-            if (errorIndices.Count > 0)
-            {
-                EditorUtility.DisplayDialog("Error", $"发现 {errorIndices.Count} 处数据错误", "OK");
-                Repaint();
-                return;
-            }
-
+        if (errorIndices.Count > 0)
+        {
+            EditorUtility.DisplayDialog("Error", $"发现 {errorIndices.Count} 处数据错误", "OK");
+        }
+        else
+        {
             // 保存数据
             var wrapper = new DictionaryWrapper
             {
@@ -836,26 +822,60 @@ public class DefaultSaveDataGenerator : EditorWindow
                     value = e.jsonData
                 }).ToList()
             };
+            Debug.Log(currentFilePath + "保存成功");
+            File.WriteAllText(currentFilePath, JsonUtility.ToJson(wrapper));
+            //AssetDatabase.Refresh();
+            EditorUtility.DisplayDialog("Success", "保存成功", "OK");
+        }
+        searchString = tempSearch;
+        selectedFilterType = tempFilter;
+        ApplyFilter();
+        Repaint();
 
-            if (RelativeAddressMode)
+        }
+        // 数据验证
+    
+
+    private List<int> ValidateAllEntries()
+    {
+        List<int> errorIndices = new ();
+        HashSet<string> idSet = new ();
+        for (int i = 0; i < currentEntries.Count; i++)//遍历并进行数据检测，同时将错误数据进行标记。标记完毕后替代原有数据
+        {
+            var entry = currentEntries[i];
+            entry.hasError = false;
+
+            // 验证规则
+            if (string.IsNullOrEmpty(entry.id))
             {
+                entry.hasError = true;
 
-                File.WriteAllText(Path.Combine(SAVEFOLDERPATHLOCALSTR, existingSaves[selectedFileIndex]), JsonUtility.ToJson(wrapper));
+            }
+            else if (idSet.Contains(entry.id))
+            {
+                entry.hasError = true;
 
             }
             else
             {
-                File.WriteAllText(Path.Combine(SAVEFOLDERPATHSTR, existingSaves[selectedFileIndex]), JsonUtility.ToJson(wrapper));
+                idSet.Add(entry.id);
             }
-            //AssetDatabase.Refresh();
 
-            ApplyFilter();
-            Repaint();
+            if (entry.dataType == StructForSaveData.DataTypes.Empty)
+            {
+                entry.hasError = true;
 
-            EditorUtility.DisplayDialog("Success", "保存成功", "OK");
+            }
+
+            currentEntries[i] = entry;
+            if (entry.hasError)
+            {
+                errorIndices.Add(i);
+            }
         }
-        // 数据验证
+        return errorIndices;
     }
+
 
     #endregion
 
@@ -893,27 +913,48 @@ public class DefaultSaveDataGenerator : EditorWindow
     private void ApplyFilter()
     {
         filteredEntries.Clear();
-        filteredEntries = currentEntries
-        .Where(entry => 
-        {
-            //不用return (entry.dataType == selectedFilterType);的原因是因为entry.dataType永远为单一状态，而selectedFilterType可能是多个状态集合
-            if (selectedFilterType == DataTypes.Empty)
-            {
-                return (entry.dataType == DataTypes.Empty);
-            }
-            else
-            {
-                return
-                ((selectedFilterType & entry.dataType) != 0);
 
+        for (int i = 0; i < currentEntries.Count; i++)
+        {
+            var entry = currentEntries[i];
+
+            // 类型匹配检查
+            bool typeMatch = (selectedFilterType == DataTypes.Empty)
+                ? (entry.dataType == DataTypes.Empty)
+                : ((selectedFilterType & entry.dataType) != 0);
+
+            // 搜索匹配检查
+            bool searchMatch = entry.id.IndexOf(searchString, StringComparison.OrdinalIgnoreCase) >= 0;
+
+            if (typeMatch && searchMatch)
+            {
+                filteredIndices.Add(i);
             }
-        })
-        .Where(entry => 
-            entry.id.IndexOf(searchString, StringComparison.OrdinalIgnoreCase) >= 0
-        )
-        .ToList();
-        Repaint();
+        }
+
+
+
+        //filteredEntries = currentEntries
+        //.Where(entry => 
+        //{
+        //    //不用return (entry.dataType == selectedFilterType);的原因是因为entry.dataType永远为单一状态，而selectedFilterType可能是多个状态集合
+        //    if (selectedFilterType == DataTypes.Empty)
+        //    {
+        //        return (entry.dataType == DataTypes.Empty);
+        //    }
+        //    else
+        //    {
+        //        return
+        //        ((selectedFilterType & entry.dataType) != 0);
+
+        //    }
+        //})
+        //.Where(entry => 
+        //    entry.id.IndexOf(searchString, StringComparison.OrdinalIgnoreCase) >= 0
+        //)
+        //.ToList();
         isFilterActive = !string.IsNullOrEmpty(searchString) || selectedFilterType != allTypesMask;
+        Repaint();
 
     }
     private TextAsset LoadTextAssetFromLocalPath(string filePath)
@@ -940,6 +981,17 @@ public class DefaultSaveDataGenerator : EditorWindow
             Debug.LogError($"加载失败: {e.Message}");
             return null;
         }
+    }
+
+    private bool ShouldIncludeInFilter(SaveDataEntry entry)
+    {
+        bool typeMatch = (selectedFilterType == DataTypes.Empty)
+            ? (entry.dataType == DataTypes.Empty)
+            : ((selectedFilterType & entry.dataType) != 0);
+
+        bool searchMatch = entry.id.IndexOf(searchString, StringComparison.OrdinalIgnoreCase) >= 0;
+
+        return typeMatch && searchMatch;
     }
     #endregion
 }

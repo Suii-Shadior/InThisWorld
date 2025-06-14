@@ -16,7 +16,7 @@ public class DataConfig : ScriptableObject
 
     [HideInInspector] public string SAVEFOLDERPATHSTR = "C:\\Users\\Administrator\\AppData\\LocalLow\\SeiDoge\\InThisWorld\\SaveData";//Ä¬ÈÏÎªAssets/SaveData/
     [HideInInspector] public string SAVEFOLDERPATHLOCALSTR = "Assets\\SaveData";
-
+    [HideInInspector] public string TESTSCENESTR = "TestData";
     [HideInInspector] public string HADSTARTGAMESTR = "HadPlayedGame";
 
 }
