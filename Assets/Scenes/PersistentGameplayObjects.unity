@@ -811,7 +811,7 @@ PrefabInstance:
     - target: {fileID: 1831842333904655086, guid: afbb9dca5ac18ca48be875e8792f0a6b,
         type: 3}
       propertyPath: isTestMode
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1867662221157785069, guid: afbb9dca5ac18ca48be875e8792f0a6b,
         type: 3}

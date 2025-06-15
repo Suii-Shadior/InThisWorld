@@ -138,7 +138,7 @@ public class DataController : MonoBehaviour
         else
         {
 
-            if (!PlayerPrefs.HasKey(dataConfig.FILEPATHSTR))
+            if (PlayerPrefs.HasKey(dataConfig.FILEPATHSTR))
             {
                 currentSaveFliePath = PlayerPrefs.GetString(dataConfig.FILEPATHSTR);
             }
@@ -160,7 +160,7 @@ public class DataController : MonoBehaviour
             if (File.Exists(Path.Combine(dataConfig.SAVEFOLDERPATHSTR, dataConfig.FILEPATH1STR + ".json")))
             {
                 string saveData1Overview = PlayerPrefs.GetString(dataConfig.OVERVIEW1STR);
-                Debug.Log(saveData1Overview);
+                //Debug.Log(saveData1Overview);
                 SaveDataOverview overview1 = JsonUtility.FromJson<SaveDataOverview>(saveData1Overview);
                 theUI.saveDataOverviews.Add(overview1);
                 //theUI.saveDataOverviews.Add(JsonUtility.FromJson<SaveDataOverview>(saveData1Overview));
