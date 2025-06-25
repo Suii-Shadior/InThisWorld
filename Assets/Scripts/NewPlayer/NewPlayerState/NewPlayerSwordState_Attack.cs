@@ -106,15 +106,23 @@ public class NewPlayerSwordState_Attack : NewPlayerState,IMove_horizontally, IFa
         /* 
          * Work1.Attack=>normal
          */
-        if (player.thisAC.isAttackingPlaying() && player.thisAC.thisAnim.GetCurrentAnimatorStateInfo(1).normalizedTime%1 >= .9f)
+        if (player.isNewAC)
         {
-            //Debug.Log(player.thisAC.thisAnim.GetCurrentAnimatorClipInfo(1)[0].clip.name);
-            player.StateOver();
+
         }
         else
         {
-            //Debug.Log(player.thisAC.thisAnim.GetCurrentAnimatorStateInfo(1).normalizedTime % 1);
-            //Debug.Log(player.thisAC.thisAnim.GetCurrentAnimatorStateInfo(1).shortNameHash);
+            if (player.thisAC.isAttackingPlaying() && player.thisAC.thisAnim.GetCurrentAnimatorStateInfo(1).normalizedTime % 1 >= .9f)
+            {
+                //Debug.Log(player.thisAC.thisAnim.GetCurrentAnimatorClipInfo(1)[0].clip.name);
+                player.StateOver();
+            }
+            else
+            {
+                //Debug.Log(player.thisAC.thisAnim.GetCurrentAnimatorStateInfo(1).normalizedTime % 1);
+                //Debug.Log(player.thisAC.thisAnim.GetCurrentAnimatorStateInfo(1).shortNameHash);
+            }
+
         }
     }
 

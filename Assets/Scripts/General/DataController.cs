@@ -109,13 +109,13 @@ public class DataController : MonoBehaviour
     }
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.P))
-        {
-            foreach (string savecache in saveableObjectsCacheData.Keys)
-            {
-                Debug.Log(savecache + ":" + saveableObjectsCacheData[savecache].key);
-            }
-        }
+        //if (Input.GetKeyDown(KeyCode.P))
+        //{
+        //    foreach (string savecache in saveableObjectsCacheData.Keys)
+        //    {
+        //        Debug.Log(savecache + ":" + saveableObjectsCacheData[savecache].key);
+        //    }
+        //}
         //if (Input.GetKeyDown(KeyCode.Q))
         //{
         //    foreach (string savecache in saveableObjectsSaveData.Keys)

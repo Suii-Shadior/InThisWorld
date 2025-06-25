@@ -36,7 +36,9 @@ public class NewPlayerController : MonoBehaviour,ISave<PlayerSaveData>
     #region 组件
     [HideInInspector] public Rigidbody2D thisRB;
     [HideInInspector] public PhysicsRelated thisPR;
+    public bool isNewAC;
     [HideInInspector] public PlayerAnimatorController thisAC;
+    [HideInInspector] public PlayerAnimationController thisNewAC;
     [HideInInspector] public PlayerFXController thisFX;
     [HideInInspector] public CharacterRelated thisCR;
     [SerializeField] private ControllerManager theCM;
@@ -176,7 +178,15 @@ public class NewPlayerController : MonoBehaviour,ISave<PlayerSaveData>
         //获取组件
         thisRB = GetComponent<Rigidbody2D>();
         thisPR = GetComponent<PhysicsRelated>();
-        thisAC = GetComponentInChildren<PlayerAnimatorController>();
+        if (isNewAC)
+        {
+            thisNewAC = GetComponentInChildren<PlayerAnimationController>();
+        }
+        else
+        {
+
+            thisAC = GetComponentInChildren<PlayerAnimatorController>();
+        }
         thisFX = GetComponentInChildren<PlayerFXController>();
         thisCR = GetComponentInChildren<CharacterRelated>();
         thisBoxCol = GetComponent<BoxCollider2D>();

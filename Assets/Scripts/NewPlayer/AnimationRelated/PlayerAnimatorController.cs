@@ -88,8 +88,18 @@ public class PlayerAnimatorController : MonoBehaviour
     #region 不合理的外部调用
     public bool isAttackingPlaying()
     {
+        if (player.isNewAC)
+        {
+            return player.thisNewAC.thisAnim.GetCurrentAnimatorStateInfo(1).IsName("Attack.NewDownwardAttack") || player.thisNewAC.thisAnim.GetCurrentAnimatorStateInfo(1).IsName("Attack.NewAltAttack")
+            || player.thisNewAC.thisAnim.GetCurrentAnimatorStateInfo(1).IsName("Attack.NewAttack") || player.thisNewAC.thisAnim.GetCurrentAnimatorStateInfo(1).IsName("Attack.NewUpwardAttack");
+
+        }
+        else
+        {
         return player.thisAC.thisAnim.GetCurrentAnimatorStateInfo(1).IsName("Attack.NewDownwardAttack") || player.thisAC.thisAnim.GetCurrentAnimatorStateInfo(1).IsName("Attack.NewAltAttack")
             || player.thisAC.thisAnim.GetCurrentAnimatorStateInfo(1).IsName("Attack.NewAttack") || player.thisAC.thisAnim.GetCurrentAnimatorStateInfo(1).IsName("Attack.NewUpwardAttack");
+
+        }
     }
     #endregion
 

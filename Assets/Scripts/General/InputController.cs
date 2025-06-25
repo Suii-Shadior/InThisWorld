@@ -224,7 +224,15 @@ public class InputController : MonoBehaviour
                             thePlayer.attackSignal = 1;
                         }
                     }
-                    thePlayer.thisAC.SetAttackCounter();
+                    if (thePlayer.isNewAC)
+                    {
+
+                    }
+                    else
+                    {
+                        thePlayer.thisAC.SetAttackCounter();
+
+                    }
                     thePlayer.ChangeToAttackState();
 
                 }

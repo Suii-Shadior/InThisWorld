@@ -24,7 +24,15 @@ public class NewPlayerState
 
     public virtual void Enter()
     {
-        player.thisAC.TBool(animBoolName);
+        if (player.isNewAC)
+        {
+
+        }
+        else
+        {
+            player.thisAC.TBool(animBoolName);
+
+        }
         stateEnd = false;
     }
 
@@ -39,7 +47,14 @@ public class NewPlayerState
 
     public virtual void Exit()
     {
-        player.thisAC.FBool(animBoolName);
+        if (player.isNewAC)
+        {
+
+        }
+        else
+        {
+            player.thisAC.FBool(animBoolName);
+        }
     }
     public void CurrentStateEnd()//用于中断可中断状态，冲刺或攻击
     {
